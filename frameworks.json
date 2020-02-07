@@ -1,11 +1,14 @@
 [
   {
-    "name": "nodejs-express"
+    "name": "nodejs-express",
+    "hasStarterKit": true
   },
   {
-    "name": "nodejs-zeit"
+    "name": "nodejs-zeit",
+    "hasStarterKit": true
   },
   {
-    "name": "typescript-zeit"
+    "name": "typescript-zeit",
+    "hasStarterKit": true
   }
 ]
