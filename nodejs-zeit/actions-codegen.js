@@ -3,10 +3,11 @@ const templater = (actionName, actionsSdl, derive) => {
   const ast = parse(`${actionsSdl}`);
 
   let mutationDef;
+
   const mutationAst = {
     ...ast,
     definitions: ast.definitions.filter(d => {
-      if (d.name.value === 'Mutation') {
+      if (d.name.value === 'Mutation' && (d.kind === 'ObjectTypeDefinition' || d.kind === 'ObjectTypeExtension')) {
         if (mutationDef) return false
         mutationDef = d.fields.find(f => f.name.value === actionName);
         if (!mutationDef) {
@@ -18,6 +19,7 @@ const templater = (actionName, actionsSdl, derive) => {
       return false;
     })
   }
+
   const mutationName = mutationDef.name.value;
   const mutationArguments = mutationDef.arguments;
   let mutationOutputType = mutationDef.type;
@@ -32,7 +34,7 @@ const templater = (actionName, actionsSdl, derive) => {
   const outputTypeFields = outputType.fields.map(f => f.name.value);
 
   let graphqlClientCode = '';
-  let mutationCodegen = '';
+  let operationCodegen = '';
   let validateFunction = '';
   let errorSnippet = '';
   let successSnippet = '';
@@ -40,13 +42,16 @@ const templater = (actionName, actionsSdl, derive) => {
 
   const requestInputDestructured = `{ ${mutationDef.arguments.map(a => a.name.value).join(', ')} }`;
 
-  if (derive && derive.mutation) {
+  const shouldDerive = !!(derive && derive.operation);
+  if (shouldDerive) {
 
-    const operationDoc = parse(derive.mutation);
+    const operationDoc = parse(derive.operation);
     const operationName = operationDoc.definitions[0].selectionSet.selections.filter(s => s.name.value.indexOf('__') !== 0)[0].name.value;
 
-    mutationCodegen = `
-const HASURA_MUTATION = \`${derive.mutation}\`;`;
+    operationCodegen = `
+const HASURA_OPERATION = \`
+${derive.operation}
+\`;`;
 
     executeFunction = `
 // execute the parent mutation in Hasura
@@ -56,7 +61,7 @@ const execute = async (variables) => {
     {
       method: 'POST',
       body: JSON.stringify({
-        query: HASURA_MUTATION,
+        query: HASURA_OPERATION,
         variables
       })
     }
@@ -67,10 +72,10 @@ const execute = async (variables) => {
 
 
     graphqlClientCode = `
-  // execute the Hasura mutation
+  // execute the Hasura operation
   const { data, errors } = await execute(${requestInputDestructured});`
 
-    errorSnippet = `  // if Hasura mutation errors, then throw error
+    errorSnippet = `  // if Hasura operation errors, then throw error
   if (errors) {
     return res.status(400).json({
       message: errors.message
@@ -101,7 +106,7 @@ ${outputTypeFields.map(f => `    ${f}: "<value>"`).join(',\n')}
   }
 
   const handlerContent = `
-${derive ? 'const fetch = require("node-fetch")\n' : ''}${derive ? `${mutationCodegen}\n` : ''}${derive ? `${executeFunction}\n` : ''}
+${shouldDerive ? 'const fetch = require("node-fetch")\n' : ''}${shouldDerive ? `${operationCodegen}\n` : ''}${shouldDerive ? `${executeFunction}\n` : ''}
 // Request Handler
 const handler = async (req, res) => {
 
@@ -109,7 +114,7 @@ const handler = async (req, res) => {
   const ${requestInputDestructured} = req.body.input;
 
   // run some business logic
-${derive ? graphqlClientCode : ''}
+${shouldDerive ? graphqlClientCode : ''}
 
 ${errorSnippet}
 
