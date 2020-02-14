@@ -3,8 +3,8 @@
 This is a starter kit for `nodejs` with `express`. To get started:
 
 ```
-yarn
-yarn start
+npm ci
+npm start
 ```
 
 ## Development

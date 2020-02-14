@@ -5,13 +5,13 @@ This is a starter kit for `typescript` with `zeit`. To get started:
 You first need to install the `now-cli`.
 
 ```bash
-yarn global add now
+npm install -g now
 ```
 
 Install the dependencies and start the now dev server:
 
 ```bash
-yarn
+npm ci
 now dev
 ```
 
