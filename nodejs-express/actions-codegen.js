@@ -43,6 +43,7 @@ const templater = (actionName, actionsSdl, derive) => {
   const requestInputDestructured = `{ ${mutationDef.arguments.map(a => a.name.value).join(', ')} }`;
 
   const shouldDerive = !!(derive && derive.operation);
+  const hasuraEndpoint = derive && derive.endpoint ? derive.endpoint : 'http://localhost:8080/v1/graphql';
   if (shouldDerive) {
 
     const operationDoc = parse(derive.operation);
@@ -55,11 +56,12 @@ ${derive.operation}
 
     executeFunction = `
 // execute the parent mutation in Hasura
-const execute = async (variables) => {
+const execute = async (variables, reqHeaders) => {
   const fetchResponse = await fetch(
-    'https://community-call-demo.herokuapp.com/v1/graphql',
+    "${hasuraEndpoint}",
     {
       method: 'POST',
+      headers: reqHeaders || {},
       body: JSON.stringify({
         query: HASURA_OPERATION,
         variables
@@ -70,10 +72,9 @@ const execute = async (variables) => {
 };
   `
 
-
     graphqlClientCode = `
   // execute the Hasura operation
-  const { data, errors } = await execute(${requestInputDestructured});`
+  const { data, errors } = await execute(${requestInputDestructured}, req.headers);`
 
     errorSnippet = `  // if Hasura operation errors, then throw error
   if (errors) {
