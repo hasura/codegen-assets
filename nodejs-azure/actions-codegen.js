@@ -61,7 +61,7 @@ module.exports = async function (context, req) {
 
 // Template code for generating a fetch API call
 // Only used for derive
-const generateFetch = (actionName, rawQuery, variables, queryRootFieldName) => {
+const generateFetch = (actionName, rawQuery, variables, queryRootFieldName, derive) => {
   const queryName = 'HASURA_' + actionName.toUpperCase();
   let actionNameUpper = actionName[0].toUpperCase() + actionName.slice(1);
 
@@ -73,7 +73,7 @@ ${rawQuery}
 \`;
 
 const execute${actionNameUpper} = async (variables, headers) => {
-  const result = await fetch (url, {
+  const result = await fetch ("${derive.endpoint || 'http://localhost:8080/v1/graphql'}", {
     method: 'POST',
     body: JSON.stringify({
       query: ${queryName},
@@ -199,7 +199,8 @@ const templater = (actionName, actionsSdl, derive) => {
       actionName,
       derive.operation,
       `{ ${variableNames.join(', ')} }`,
-      queryRootFieldName
+      queryRootFieldName,
+      derive
     );
   }
 
