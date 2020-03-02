@@ -115,9 +115,6 @@ const execute${actionNameUpper} = async (variables, headers) => {
   return {fetchExecuteCode, runExecuteInHandlerCode};
 };
 
-// Let us now begin the codegen!
-const { parse } = require('graphql');
-
 // actionName: Name of the action
 // actionsSdl: GraphQL SDL string that has the action and dependent types
 // derive: Whether this action was asked to be derived from a Hasura operation
