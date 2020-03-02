@@ -131,13 +131,22 @@ const templater = (actionName, actionsSdl, derive) => {
   ast = parse(actionsSdl);
 
   // Find the Mutation type for this action
-  const actionMutationTypeDef = ast.definitions
-    .find(def => (def.name.value === 'Mutation'))
-    .fields
-    .find(def => (def.name.value === actionName));
+  let actionMutationTypeDef;
+  for (var i = ast.definitions.length - 1; i >= 0; i--) {
+    const mutationDef = ast.definitions[i];
+    if (mutationDef.name.value === 'Mutation') {
+      actionMutationTypeDef = mutationDef
+        .fields
+        .find(def => (def.name.value === actionName));
+      if (!!actionMutationTypeDef) {
+        break;
+      }
+    }
+  }
 
   // If the input arguments are {name, age, email}
   // then we want to generate: const {name, age, email} = req.body
+  console.log(actionMutationTypeDef);
   const inputArgumentsNames = actionMutationTypeDef.arguments.map(i => i.name.value);
   console.log('Input arguments: ' + inputArgumentsNames);
 
