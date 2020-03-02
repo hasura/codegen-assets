@@ -10,5 +10,9 @@
   {
     "name": "typescript-zeit",
     "hasStarterKit": true
+  },
+  {
+    "name": "nodejs-azure",
+    "hasStarterKit": false
   }
 ]
