@@ -82,7 +82,7 @@ const templater = async (actionName, actionsSdl, derive) => {
         mutationDef = d.fields.find(f => f.name.value === actionName);
         if (!mutationDef) {
           return false;
-        } {
+        } else {
           return true;
         }
       }
