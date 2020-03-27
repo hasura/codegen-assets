@@ -89,7 +89,7 @@ const execute${actionNameUpper} = async (variables, headers) => {
 
   const runExecuteInHandlerCode = `
   // Execute the Hasura query
-  const {data, errors} = execute${actionNameUpper}(${variables}, req.headers);
+  const {data, errors} = await execute${actionNameUpper}(${variables}, req.headers);
 
   // If there's an error in the running the Hasura query
   if (errors) {
