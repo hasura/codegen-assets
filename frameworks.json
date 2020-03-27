@@ -12,7 +12,7 @@
     "hasStarterKit": true
   },
   {
-    "name": "nodejs-azure",
+    "name": "nodejs-azure-function",
     "hasStarterKit": false
   }
 ]
