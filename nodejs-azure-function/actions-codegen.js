@@ -16,11 +16,11 @@
   - If this is a typed language:
   - codegen the types in the second file &
   - parse into the right type if this is a typed language
-- If this is derived from a hasura mutation
+- If this is derived from a hasura operation
   - Take the inputs and use them to create variables
-  - Pass these variables and fire the underlying Hasura mutation
-  - If Hasura mutation returns error, return error
-  - Else return the exact response that the Hasura mutation returns
+  - Pass these variables and fire the underlying Hasura operation
+  - If Hasura operation returns error, return error
+  - Else return the exact response that the Hasura operation returns
 - If this is not derived:
   - Have a small error block showing what an error response would look like
   - Return a success with a JSON object, the keys set to the return type
@@ -28,7 +28,7 @@
  */
 
 // Generate the basic handler
-// For nodejs-azure-function
+// For azure
 const generateHandler = (extractArgsFromBody, outputTypeSpread) => {
   const handlerBeginningCode = `
 module.exports = async function (context, req) {
@@ -61,7 +61,7 @@ module.exports = async function (context, req) {
 
 // Template code for generating a fetch API call
 // Only used for derive
-const generateFetch = (actionName, rawQuery, variables, queryRootFieldName) => {
+const generateFetch = (actionName, rawQuery, variables, queryRootFieldName, derive) => {
   const queryName = 'HASURA_' + actionName.toUpperCase();
   let actionNameUpper = actionName[0].toUpperCase() + actionName.slice(1);
 
@@ -72,13 +72,15 @@ const ${queryName} = \`
 ${rawQuery}
 \`;
 
-const execute${actionNameUpper} = async (variables) => {
-  const result = await fetch (url, {
+const execute${actionNameUpper} = async (variables, headers) => {
+  const result = await fetch ("${derive.endpoint || 'http://localhost:8080/v1/graphql'}", {
     method: 'POST',
     body: JSON.stringify({
       query: ${queryName},
       variables
-    })});
+    }),
+    headers: headers || {}
+  });
 
   const data = await result.json();
   return data;
@@ -87,7 +89,7 @@ const execute${actionNameUpper} = async (variables) => {
 
   const runExecuteInHandlerCode = `
   // Execute the Hasura query
-  const {data, errors} = execute${actionNameUpper}(${variables});
+  const {data, errors} = execute${actionNameUpper}(${variables}, req.headers);
 
   // If there's an error in the running the Hasura query
   if (errors) {
@@ -113,13 +115,10 @@ const execute${actionNameUpper} = async (variables) => {
   return {fetchExecuteCode, runExecuteInHandlerCode};
 };
 
-// Let us now begin the codegen!
-const { parse } = require('graphql');
-
 // actionName: Name of the action
 // actionsSdl: GraphQL SDL string that has the action and dependent types
-// derive: Whether this action was asked to be derived from a Hasura mutation
-//         derive.mutation contains the mutation string
+// derive: Whether this action was asked to be derived from a Hasura operation
+//         derive.operation contains the operation string
 const templater = (actionName, actionsSdl, derive) => {
 
   console.log('Running the codegen for: ' + actionName);
@@ -129,13 +128,22 @@ const templater = (actionName, actionsSdl, derive) => {
   ast = parse(actionsSdl);
 
   // Find the Mutation type for this action
-  const actionMutationTypeDef = ast.definitions
-    .find(def => (def.name.value === 'Mutation'))
-    .fields
-    .find(def => (def.name.value === actionName));
+  let actionMutationTypeDef;
+  for (var i = ast.definitions.length - 1; i >= 0; i--) {
+    const mutationDef = ast.definitions[i];
+    if (mutationDef.name.value === 'Mutation') {
+      actionMutationTypeDef = mutationDef
+        .fields
+        .find(def => (def.name.value === actionName));
+      if (!!actionMutationTypeDef) {
+        break;
+      }
+    }
+  }
 
   // If the input arguments are {name, age, email}
   // then we want to generate: const {name, age, email} = req.body
+  console.log(actionMutationTypeDef);
   const inputArgumentsNames = actionMutationTypeDef.arguments.map(i => i.name.value);
   console.log('Input arguments: ' + inputArgumentsNames);
 
@@ -167,31 +175,32 @@ const templater = (actionName, actionsSdl, derive) => {
   const basicHandlerCode = generateHandler(extractArgsFromBody, outputTypeSpread);
 
   console.log(basicHandlerCode);
-  // If this action is being derived for an existing mutation
+  // If this action is being derived for an existing operation
   // then we'll add a fetch API call
   let deriveCode;
-  let isDerivation = derive && derive.mutation;
+  let isDerivation = derive && derive.operation;
   if (isDerivation) {
-    const mutationAST = parse(derive.mutation);
-    const queryRootField = mutationAST.definitions[0].selectionSet
+    const operationAST = parse(derive.operation);
+    const queryRootField = operationAST.definitions[0].selectionSet
       .selections
       .find(f => (!f.name.value.startsWith('__')))
     const queryRootFieldName = queryRootField.alias ?
       queryRootField.alias.value :
       queryRootField.name.value;
-    const variableNames = mutationAST.definitions[0]
+    const variableNames = operationAST.definitions[0]
       .variableDefinitions
       .map(vdef => vdef.variable.name.value);
 
-    console.log('Derive:: \n' + derive.mutation);
+    console.log('Derive:: \n' + derive.operation);
     console.log('Derive:: root field name: ' + queryRootFieldName);
     console.log('Derive:: variable names: ' + variableNames);
 
     deriveCode = generateFetch(
       actionName,
-      derive.mutation,
+      derive.operation,
       `{ ${variableNames.join(', ')} }`,
-      queryRootFieldName
+      queryRootFieldName,
+      derive
     );
   }
 
@@ -213,7 +222,7 @@ const templater = (actionName, actionsSdl, derive) => {
 
   return [
     {
-      name: actionName + 'Handler.js',
+      name: actionName + '.js',
       content: finalHandlerCode
     }
   ];
