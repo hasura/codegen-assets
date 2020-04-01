@@ -8,13 +8,20 @@ const PORT = process.env.PORT || 3000;
 app.use(bodyParser.json());
 
 app.post('/:route', (req, res) => {
-  const handler = require(`./handlers/${req.params.route}`).default;
-  if (!handler) {
-    return res.status(404).json({
-      message: 'not found'
+  try {
+    const handler = require(`./handlers/${req.params.route}`);
+    if (!handler) {
+      return res.status(404).json({
+        message: `not found`
+      });
+    }
+    return handler(req, res);
+  } catch (e) {
+    console.error(e);
+    return res.status(500).json({
+      message: `unexpected error occured`
     });
   }
-  return handler(req, res);
-})
+});
 
 app.listen(PORT);

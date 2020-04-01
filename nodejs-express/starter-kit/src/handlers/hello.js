@@ -3,4 +3,4 @@ const handler = (req, resp) => {
   return resp.json({ "hello": "world" });
 };
 
-export default handler;
+module.exports = handler;

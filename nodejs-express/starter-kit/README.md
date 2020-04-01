@@ -42,6 +42,8 @@ const greetHandler = (req, res) => {
     "greeting"
   })
 }
+
+module.exports = greetHandler;
 ```
 
 ### Throwing erros
