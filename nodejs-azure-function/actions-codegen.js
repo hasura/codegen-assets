@@ -34,9 +34,6 @@ const generateHandler = (extractArgsFromBody, outputTypeSpread) => {
 module.exports = async function (context, req) {
   ${extractArgsFromBody}
 
-  // get request headers
-  ${extracHeadersFromBody}
-
   // Write business logic that deals with inputs here...
 
 `;
@@ -75,14 +72,13 @@ const ${queryName} = \`
 ${rawQuery}
 \`;
 
-const execute${actionNameUpper} = async (variables, headers) => {
+const execute${actionNameUpper} = async (variables) => {
   const result = await fetch ("${derive.endpoint || 'http://localhost:8080/v1/graphql'}", {
     method: 'POST',
     body: JSON.stringify({
       query: ${queryName},
       variables
-    }),
-    headers: headers || {}
+    })
   });
 
   const data = await result.json();
@@ -151,11 +147,6 @@ const templater = (actionName, actionsSdl, derive) => {
   console.log('Input arguments: ' + inputArgumentsNames);
 
   const extractArgsFromBody = `const {${inputArgumentsNames.join(', ')}} = req.body.input;`;
-  const extracHeadersFromBody = `const headers = {
-    'x-hasura-admin-secret': req.headers['x-hasura-admin-secret'] || undefined,
-    'authorization': req.headers['authorization'] || undefined,
-    ...req.body.session_variables
-  };`
 
   // If the output type is type ActionResult {field1: <>, field2: <>}
   // we want to template the response of the handler to be:
