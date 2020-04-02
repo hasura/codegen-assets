@@ -2,18 +2,20 @@
 
 This is a starter kit for `nodejs` with `zeit`. To get started:
 
-You first need to install the `now-cli`.
+1. Firstly, [download the starter-kit](https://github.com/hasura/codegen-assets/raw/master/nodejs-zeit/starter-kit.zip) and `cd` into it.
 
-```bash
-npm install -g now
-```
+2. Install the `now-cli`.
 
-Install the dependencies and start the now dev server:
+  ```bash
+  npm install -g now
+  ```
 
-```bash
-npm ci
-now dev
-```
+3. Install the dependencies and start the now dev server:
+
+  ```bash
+  npm ci
+  now dev
+  ```
 
 ## Development
 
