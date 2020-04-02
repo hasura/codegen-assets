@@ -57,12 +57,11 @@ ${derive.operation}
 
     executeFunction = `
 // execute the parent mutation in Hasura
-const execute = async (variables, reqHeaders) => {
+const execute = async (variables) => {
   const fetchResponse = await fetch(
     "${hasuraEndpoint}",
     {
       method: 'POST',
-      headers: reqHeaders || {},
       body: JSON.stringify({
         query: HASURA_OPERATION,
         variables
@@ -76,7 +75,7 @@ const execute = async (variables, reqHeaders) => {
 
     graphqlClientCode = `
   // execute the Hasura operation
-  const { data, errors } = await execute(${requestInputDestructured}, headers);`
+  const { data, errors } = await execute(${requestInputDestructured});`
 
     errorSnippet = `  // if Hasura operation errors, then throw error
   if (errors) {
@@ -115,13 +114,6 @@ const handler = async (req, res) => {
 
   // get request input
   const ${requestInputDestructured} = req.body.input;
-
-  // get request headers
-  const headers = {
-    'x-hasura-admin-secret': req.headers['x-hasura-admin-secret'] || undefined,
-    'authorization': req.headers['authorization'] || undefined,
-    ...req.body.session_variables,
-  };
 
   // run some business logic
 ${shouldDerive ? graphqlClientCode : ''}
