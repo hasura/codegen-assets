@@ -76,7 +76,7 @@ const execute = async (variables, reqHeaders) => {
 
     graphqlClientCode = `
   // execute the Hasura operation
-  const { data, errors } = await execute(${requestInputDestructured}, req.headers);`
+  const { data, errors } = await execute(${requestInputDestructured}, headers);`
 
     errorSnippet = `  // if Hasura operation errors, then throw error
   if (errors) {
@@ -115,6 +115,13 @@ const handler = async (req, res) => {
 
   // get request input
   const ${requestInputDestructured} = req.body.input;
+
+  // get request headers
+  const headers = {
+    'x-hasura-admin-secret': req.headers['x-hasura-admin-secret'] || undefined,
+    'authorization': req.headers['authorization'] || undefined,
+    ...req.body.session_variables,
+  };
 
   // run some business logic
 ${shouldDerive ? graphqlClientCode : ''}

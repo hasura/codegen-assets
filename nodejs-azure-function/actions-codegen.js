@@ -34,6 +34,9 @@ const generateHandler = (extractArgsFromBody, outputTypeSpread) => {
 module.exports = async function (context, req) {
   ${extractArgsFromBody}
 
+  // get request headers
+  ${extracHeadersFromBody}
+
   // Write business logic that deals with inputs here...
 
 `;
@@ -89,7 +92,7 @@ const execute${actionNameUpper} = async (variables, headers) => {
 
   const runExecuteInHandlerCode = `
   // Execute the Hasura query
-  const {data, errors} = await execute${actionNameUpper}(${variables}, req.headers);
+  const {data, errors} = await execute${actionNameUpper}(${variables}, headers);
 
   // If there's an error in the running the Hasura query
   if (errors) {
@@ -148,6 +151,11 @@ const templater = (actionName, actionsSdl, derive) => {
   console.log('Input arguments: ' + inputArgumentsNames);
 
   const extractArgsFromBody = `const {${inputArgumentsNames.join(', ')}} = req.body.input;`;
+  const extracHeadersFromBody = `const headers = {
+    'x-hasura-admin-secret': req.headers['x-hasura-admin-secret'] || undefined,
+    'authorization': req.headers['authorization'] || undefined,
+    ...req.body.session_variables
+  };`
 
   // If the output type is type ActionResult {field1: <>, field2: <>}
   // we want to template the response of the handler to be:
