@@ -32,6 +32,9 @@
 const generateHandler = (extractArgsFromBody, outputTypeSpread) => {
   const handlerBeginningCode = `
 module.exports = async function (context, req) {
+
+  console.log('Request payload: ', JSON.stringify(req.body, null, 2));
+
   ${extractArgsFromBody}
 
   // Write business logic that deals with inputs here...
