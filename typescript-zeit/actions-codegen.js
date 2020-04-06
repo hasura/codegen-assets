@@ -182,6 +182,8 @@ ${derive ? 'import fetch from "node-fetch"\n' : ''}${derive ? `${operationCodege
 // Request Handler
 const handler = async (req: NowRequest, res: NowResponse) => {
 
+  console.log('Request payload: ', JSON.stringify(req.body, null, 2));
+
   // get request input
   const ${requestInputDestructured}: ${mutationArgType} = req.body.input;
 

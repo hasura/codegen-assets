@@ -111,6 +111,8 @@ ${outputTypeFields.map(f => `    ${f}: "<value>"`).join(',\n')}
 ${shouldDerive ? 'const fetch = require("node-fetch")\n' : ''}${shouldDerive ? `${operationCodegen}\n` : ''}${shouldDerive ? `${executeFunction}\n` : ''}
 // Request Handler
 const handler = async (req, res) => {
+  
+  console.log('Request payload: ', JSON.stringify(req.body, null, 2));
 
   // get request input
   const ${requestInputDestructured} = req.body.input;
