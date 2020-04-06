@@ -2,7 +2,7 @@
 
 This is a starter kit for `typescript` with `zeit`. To get started:
 
-1. Firstly, [download the starter-kit](https://github.com/hasura/codegen-assets/raw/master/typescript-zeit/starter-kit.zip) and `cd` into it.
+1. Firstly, [download the starter-kit](https://github.com/hasura/codegen-assets/raw/master/typescript-zeit/typescript-zeit.zip) and `cd` into it.
 
 2. You first need to install the `now-cli`.
 

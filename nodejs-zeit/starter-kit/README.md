@@ -2,7 +2,7 @@
 
 This is a starter kit for `nodejs` with `zeit`. To get started:
 
-1. Firstly, [download the starter-kit](https://github.com/hasura/codegen-assets/raw/master/nodejs-zeit/starter-kit.zip) and `cd` into it.
+1. Firstly, [download the starter-kit](https://github.com/hasura/codegen-assets/raw/master/nodejs-zeit/nodejs-zeit.zip) and `cd` into it.
 
 2. Install the `now-cli`.
 
