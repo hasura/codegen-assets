@@ -2,7 +2,7 @@
 
 This is a starter kit for `nodejs` with `express`. To get started:
 
-Firstly, [download the starter-kit](https://github.com/hasura/codegen-assets/raw/master/nodejs-express/starter-kit.zip) and `cd` into it.
+Firstly, [download the starter-kit](https://github.com/hasura/codegen-assets/raw/master/nodejs-express/nodejs-express.zip) and `cd` into it.
 
 ```
 npm ci
