@@ -73,7 +73,10 @@ const execute = async (variables) => {
 
     graphqlClientCode = `
   // execute the Hasura operation
-  const { data, errors } = await execute(${requestInputDestructured});`
+  const { data, errors } = await execute(${requestInputDestructured});
+  console.log('Hasura Response:');
+  console.log('data: ', data);
+  console.log('errors: ', errors);`
 
     errorSnippet = `  // if Hasura operation errors, then throw error
   if (errors) {
@@ -108,7 +111,7 @@ ${outputTypeFields.map(f => `    ${f}: "<value>"`).join(',\n')}
   const handlerContent = `
 ${shouldDerive ? 'const fetch = require("node-fetch")\n' : ''}${shouldDerive ? `${operationCodegen}\n` : ''}${shouldDerive ? `${executeFunction}\n` : ''}
 // Request Handler
-const handler = async (req, res) => {
+app.post('/${actionName}', async (req, res) => {
 
   console.log('Request payload: ', JSON.stringify(req.body, null, 2));
 
@@ -122,9 +125,7 @@ ${errorSnippet}
 
 ${successSnippet}
 
-}
-
-module.exports = handler;
+});
 `;
 
   const handlerFile = {
