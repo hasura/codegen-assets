@@ -126,15 +126,15 @@ const templater = (actionName, actionsSdl, derive) => {
   let ast;
   ast = parse(actionsSdl);
 
-  // Find the Mutation type for this action
-  let actionMutationTypeDef;
+  // Find the type for this action
+  let actionDef;
   for (var i = ast.definitions.length - 1; i >= 0; i--) {
-    const mutationDef = ast.definitions[i];
-    if (mutationDef.name.value === 'Mutation') {
-      actionMutationTypeDef = mutationDef
+    const typeDef = ast.definitions[i];
+    if (typeDef.name.value === 'Mutation' || typeDef.name.value === 'Query') {
+      actionDef = typeDef
         .fields
         .find(def => (def.name.value === actionName));
-      if (!!actionMutationTypeDef) {
+      if (!!actionDef) {
         break;
       }
     }
@@ -142,8 +142,8 @@ const templater = (actionName, actionsSdl, derive) => {
 
   // If the input arguments are {name, age, email}
   // then we want to generate: const {name, age, email} = req.body
-  console.log(actionMutationTypeDef);
-  const inputArgumentsNames = actionMutationTypeDef.arguments.map(i => i.name.value);
+  console.log(actionDef);
+  const inputArgumentsNames = actionDef.arguments.map(i => i.name.value);
   console.log('Input arguments: ' + inputArgumentsNames);
 
   const extractArgsFromBody = `const {${inputArgumentsNames.join(', ')}} = req.body.input;`;
@@ -155,7 +155,7 @@ const templater = (actionName, actionsSdl, derive) => {
   //    field2: ""
   // }
   const actionOutputType = ast.definitions
-    .find(def => (def.name.value === actionMutationTypeDef.type.name.value))
+    .find(def => (def.name.value === actionDef.type.name.value))
   console.log('Output type: ' + actionOutputType.name.value);
   const outputTypeFieldNames = actionOutputType.fields.map(f => f.name.value);
   console.log('Output type fields: ' + outputTypeFieldNames);
