@@ -149,9 +149,7 @@ const execute = async (variables) => {
 
     errorSnippet = `  // if Hasura operation errors, then throw error
   if (errors) {
-    return res.status(400).json({
-      message: errors.message
-    })
+    return res.status(400).json(errors[0])
   }`;
 
     successSnippet = `  // success
