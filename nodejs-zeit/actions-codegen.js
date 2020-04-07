@@ -2,15 +2,15 @@ const templater = (actionName, actionsSdl, derive) => {
 
   const ast = parse(`${actionsSdl}`);
 
-  let mutationDef;
+  let actionDef;
 
-  const mutationAst = {
+  const actionAst = {
     ...ast,
     definitions: ast.definitions.filter(d => {
-      if (d.name.value === 'Mutation' && (d.kind === 'ObjectTypeDefinition' || d.kind === 'ObjectTypeExtension')) {
-        if (mutationDef) return false
-        mutationDef = d.fields.find(f => f.name.value === actionName);
-        if (!mutationDef) {
+      if ((d.name.value === 'Mutation' || d.name.value === 'Query') && (d.kind === 'ObjectTypeDefinition' || d.kind === 'ObjectTypeExtension')) {
+        if (actionDef) return false
+        actionDef = d.fields.find(f => f.name.value === actionName);
+        if (!actionDef) {
           return false;
         } else {
           return true;
@@ -20,15 +20,14 @@ const templater = (actionName, actionsSdl, derive) => {
     })
   }
 
-  const mutationName = mutationDef.name.value;
-  const mutationArguments = mutationDef.arguments;
-  let mutationOutputType = mutationDef.type;
+  const actionArguments = actionDef.arguments;
+  let actionOutputType = actionDef.type;
 
-  while (mutationOutputType.kind !== 'NamedType') {
-    mutationOutputType = mutationOutputType.type;
+  while (actionOutputType.kind !== 'NamedType') {
+    actionOutputType = actionOutputType.type;
   }
   const outputType = ast.definitions.find(d => {
-    return (d.kind === 'ObjectTypeDefinition' && d.name.value === mutationOutputType.name.value)
+    return (d.kind === 'ObjectTypeDefinition' && d.name.value === actionOutputType.name.value)
   });
 
   const outputTypeFields = outputType.fields.map(f => f.name.value);
@@ -40,11 +39,10 @@ const templater = (actionName, actionsSdl, derive) => {
   let successSnippet = '';
   let executeFunction = '';
 
-  const requestInputDestructured = `{ ${mutationDef.arguments.map(a => a.name.value).join(', ')} }`;
+  const requestInputDestructured = `{ ${actionDef.arguments.map(a => a.name.value).join(', ')} }`;
 
   const shouldDerive = !!(derive && derive.operation);
   const hasuraEndpoint = derive && derive.endpoint ? derive.endpoint : 'http://localhost:8080/v1/graphql';
-
   if (shouldDerive) {
 
     const operationDoc = parse(derive.operation);
@@ -56,7 +54,7 @@ ${derive.operation}
 \`;`;
 
     executeFunction = `
-// execute the parent mutation in Hasura
+// execute the parent operation in Hasura
 const execute = async (variables) => {
   const fetchResponse = await fetch(
     "${hasuraEndpoint}",
@@ -73,7 +71,6 @@ const execute = async (variables) => {
   return data;
 };
   `
-
 
     graphqlClientCode = `
   // execute the Hasura operation
@@ -111,7 +108,7 @@ ${outputTypeFields.map(f => `    ${f}: "<value>"`).join(',\n')}
 ${shouldDerive ? 'const fetch = require("node-fetch")\n' : ''}${shouldDerive ? `${operationCodegen}\n` : ''}${shouldDerive ? `${executeFunction}\n` : ''}
 // Request Handler
 const handler = async (req, res) => {
-  
+
   // get request input
   const ${requestInputDestructured} = req.body.input;
 
@@ -122,13 +119,13 @@ ${errorSnippet}
 
 ${successSnippet}
 
-}
+};
 
 module.exports = handler;
 `;
 
   const handlerFile = {
-    name: `${mutationName}.js`,
+    name: `${actionName}.js`,
     content: handlerContent
   }
 
