@@ -101,9 +101,7 @@ const execute${actionNameUpper} = async (variables) => {
     context.res = {
       headers: { 'Content-Type': 'application/json' },
       status: 400,
-      body: {
-        message: errors.message
-      }
+      body: errors[0]
     };
     return;
   }
