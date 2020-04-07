@@ -68,17 +68,16 @@ const execute = async (variables) => {
       })
     }
   );
-  return await fetchResponse.json();
+  const data = await fetchResponse.json();
+  console.log('DEBUG: ', data);
+  return data;
 };
   `
 
 
     graphqlClientCode = `
   // execute the Hasura operation
-  const { data, errors } = await execute(${requestInputDestructured});
-  console.log('Hasura Response:');
-  console.log('data: ', data);
-  console.log('errors: ', errors);`
+  const { data, errors } = await execute(${requestInputDestructured});`
 
     errorSnippet = `  // if Hasura operation errors, then throw error
   if (errors) {
@@ -113,8 +112,6 @@ ${shouldDerive ? 'const fetch = require("node-fetch")\n' : ''}${shouldDerive ? `
 // Request Handler
 const handler = async (req, res) => {
   
-  console.log('Request payload: ', JSON.stringify(req.body, null, 2));
-
   // get request input
   const ${requestInputDestructured} = req.body.input;
 

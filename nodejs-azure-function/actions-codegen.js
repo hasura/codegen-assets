@@ -33,8 +33,6 @@ const generateHandler = (extractArgsFromBody, outputTypeSpread) => {
   const handlerBeginningCode = `
 module.exports = async function (context, req) {
 
-  console.log('Request payload: ', JSON.stringify(req.body, null, 2));
-
   ${extractArgsFromBody}
 
   // Write business logic that deals with inputs here...
@@ -85,6 +83,7 @@ const execute${actionNameUpper} = async (variables) => {
   });
 
   const data = await result.json();
+  console.log('DEBUG: ', data);
   return data;
 };
 `
@@ -92,9 +91,6 @@ const execute${actionNameUpper} = async (variables) => {
   const runExecuteInHandlerCode = `
   // Execute the Hasura query
   const {data, errors} = await execute${actionNameUpper}(${variables}, headers);
-  console.log('Hasura Response:');
-  console.log('data: ', data);
-  console.log('errors: ', errors);
 
   // If there's an error in the running the Hasura query
   if (errors) {

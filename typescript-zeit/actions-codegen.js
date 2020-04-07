@@ -137,16 +137,15 @@ const execute = async (variables) => {
       })
     }
   );
-  return await fetchResponse.json();
+  const data = await fetchResponse.json();
+  console.log('DEBUG: ', data);
+  return data;
 };
   `
 
     graphqlClientCode = `
   // execute the Hasura operation
-  const { data, errors } = await execute(${requestInputDestructured});
-  console.log('Hasura Response:');
-  console.log('data: ', data);
-  console.log('errors: ', errors);`
+  const { data, errors } = await execute(${requestInputDestructured});`
 
     errorSnippet = `  // if Hasura operation errors, then throw error
   if (errors) {
@@ -181,8 +180,6 @@ import { ${mutationArgType} } from './hasuraCustomTypes';
 ${derive ? 'import fetch from "node-fetch"\n' : ''}${derive ? `${operationCodegen}\n` : ''}${derive ? `${executeFunction}\n` : ''}
 // Request Handler
 const handler = async (req: NowRequest, res: NowResponse) => {
-
-  console.log('Request payload: ', JSON.stringify(req.body, null, 2));
 
   // get request input
   const ${requestInputDestructured}: ${mutationArgType} = req.body.input;
