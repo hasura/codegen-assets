@@ -75,7 +75,10 @@ const execute = async (variables) => {
 
     graphqlClientCode = `
   // execute the Hasura operation
-  const { data, errors } = await execute(${requestInputDestructured});`
+  const { data, errors } = await execute(${requestInputDestructured});
+  console.log('Hasura Response:');
+  console.log('data: ', data);
+  console.log('errors: ', errors);`
 
     errorSnippet = `  // if Hasura operation errors, then throw error
   if (errors) {
