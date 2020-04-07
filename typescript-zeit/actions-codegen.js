@@ -42,19 +42,28 @@ const templater = async (actionName, actionsSdl, derive) => {
 
   const typesAst = {
     ...ast,
-    definitions: ast.definitions.filter(d => d.name.value !== 'Mutation')
+    definitions: ast.definitions.filter(d => (d.name.value !== 'Mutation' && d.name.value !== 'Query'))
   };
 
-  const allMutationDefs = ast.definitions.filter(d => d.name.value === 'Mutation');
-  let allMutationFields = [];
-  allMutationDefs.forEach(md => {
-    allMutationFields = [...allMutationFields, ...md.fields]
+  const allMutationActionDefs = ast.definitions.filter(d => (d.name.value === 'Mutation'));
+  const allQueryActionDefs = ast.definitions.filter(d => (d.name.value === 'Query'));
+  let allMutationActionFields = [];
+  allMutationActionDefs.forEach(md => {
+    allMutationActionFields = [...allMutationActionFields, ...md.fields]
+  });
+  let allQueryActionFields = [];
+  allQueryActionDefs.forEach(qd => {
+    allQueryActionFields = [...allQueryActionFields, ...qd.fields]
   });
 
   const mutationRootDef = ast.definitions.find(d => d.name.value === 'Mutation');
+  const queryRootDef = ast.definitions.find(d => d.name.value === 'Query');
   mutationRootDef.kind = 'ObjectTypeDefinition';
-  mutationRootDef.fields = allMutationFields;
+  queryRootDef.kind = 'ObjectTypeDefinition';
+  mutationRootDef.fields = allMutationActionFields;
+  queryRootDef.fields = allQueryActionFields;
   typesAst.definitions.push(mutationRootDef);
+  typesAst.definitions.push(queryRootDef);
 
   const codegenConfig = {
     schema: typesAst,
@@ -73,14 +82,16 @@ const templater = async (actionName, actionsSdl, derive) => {
     name: `hasuraCustomTypes.ts`
   }
 
-  let mutationDef;
-  const mutationAst = {
+  let actionDef;
+  let actionType = '';
+  const actionAst = {
     ...ast,
     definitions: ast.definitions.filter(d => {
-      if (d.name.value === 'Mutation') {
-        if (mutationDef) return false
-        mutationDef = d.fields.find(f => f.name.value === actionName);
-        if (!mutationDef) {
+      if (d.name.value === 'Mutation' || d.name.value === 'Query') {
+        if (actionDef) return false
+        actionDef = d.fields.find(f => f.name.value === actionName);
+        actionType = d.name.value;
+        if (!actionDef) {
           return false;
         } else {
           return true;
@@ -90,17 +101,16 @@ const templater = async (actionName, actionsSdl, derive) => {
     })
   }
 
-  const mutationArgType = (`Mutation${camelize(actionName)}Args`)
+  const actionArgType = (`${actionType}${camelize(actionName)}Args`)
 
-  const mutationName = mutationDef.name.value;
-  const mutationArguments = mutationDef.arguments;
-  let mutationOutputType = mutationDef.type;
+  const actionArguments = actionDef.arguments;
+  let actionOutputType = actionDef.type;
 
-  while (mutationOutputType.kind !== 'NamedType') {
-    mutationOutputType = mutationOutputType.type;
+  while (actionOutputType.kind !== 'NamedType') {
+    actionOutputType = actionOutputType.type;
   }
   const outputType = ast.definitions.find(d => {
-    return (d.kind === 'ObjectTypeDefinition' && d.name.value === mutationOutputType.name.value)
+    return (d.kind === 'ObjectTypeDefinition' && d.name.value === actionOutputType.name.value)
   });
 
   const outputTypeFields = outputType.fields.map(f => f.name.value);
@@ -112,7 +122,7 @@ const templater = async (actionName, actionsSdl, derive) => {
   let successSnippet = '';
   let executeFunction = '';
 
-  const requestInputDestructured = `{ ${mutationDef.arguments.map(a => a.name.value).join(', ')} }`;
+  const requestInputDestructured = `{ ${actionDef.arguments.map(a => a.name.value).join(', ')} }`;
 
   const shouldDerive = !!(derive && derive.operation)
   const hasuraEndpoint = derive && derive.endpoint ? derive.endpoint : 'http://localhost:8080/v1/graphql';
@@ -125,7 +135,7 @@ const templater = async (actionName, actionsSdl, derive) => {
 const HASURA_OPERATION = \`${derive.operation}\`;`;
 
     executeFunction = `
-// execute the parent mutation in Hasura
+// execute the parent operation in Hasura
 const execute = async (variables) => {
   const fetchResponse = await fetch(
     "${hasuraEndpoint}",
@@ -176,13 +186,13 @@ ${outputTypeFields.map(f => `    ${f}: "<value>"`).join(',\n')}
   }
 
   const handlerContent = `import { NowRequest, NowResponse } from '@now/node';
-import { ${mutationArgType} } from './hasuraCustomTypes';
+import { ${actionArgType} } from './hasuraCustomTypes';
 ${derive ? 'import fetch from "node-fetch"\n' : ''}${derive ? `${operationCodegen}\n` : ''}${derive ? `${executeFunction}\n` : ''}
 // Request Handler
 const handler = async (req: NowRequest, res: NowResponse) => {
 
   // get request input
-  const ${requestInputDestructured}: ${mutationArgType} = req.body.input;
+  const ${requestInputDestructured}: ${actionArgType} = req.body.input;
 
   // run some business logic
 ${derive ? graphqlClientCode : ''}
@@ -197,10 +207,9 @@ export default handler;
 `;
 
   const handlerFileMetadata = {
-    name: `${mutationName}.ts`,
+    name: `${actionName}.ts`,
     content: handlerContent
   }
 
   return [handlerFileMetadata, typesFileMetadata];
 
-}
