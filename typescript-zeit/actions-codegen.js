@@ -212,4 +212,4 @@ export default handler;
   }
 
   return [handlerFileMetadata, typesFileMetadata];
-
+}
