@@ -58,12 +58,18 @@ const templater = async (actionName, actionsSdl, derive) => {
 
   const mutationRootDef = ast.definitions.find(d => d.name.value === 'Mutation');
   const queryRootDef = ast.definitions.find(d => d.name.value === 'Query');
-  mutationRootDef.kind = 'ObjectTypeDefinition';
-  queryRootDef.kind = 'ObjectTypeDefinition';
-  mutationRootDef.fields = allMutationActionFields;
-  queryRootDef.fields = allQueryActionFields;
-  typesAst.definitions.push(mutationRootDef);
-  typesAst.definitions.push(queryRootDef);
+  if (mutationRootDef) {
+    mutationRootDef.kind = 'ObjectTypeDefinition';
+    mutationRootDef.fields = allMutationActionFields;
+    typesAst.definitions.push(mutationRootDef);
+  }
+
+  if (queryRootDef) {
+    queryRootDef.kind = 'ObjectTypeDefinition';
+    queryRootDef.fields = allQueryActionFields;
+    typesAst.definitions.push(queryRootDef);
+  }
+  
 
   const codegenConfig = {
     schema: typesAst,
@@ -201,7 +207,7 @@ ${errorSnippet}
 
 ${successSnippet}
 
-}
+};
 
 export default handler;
 `;
