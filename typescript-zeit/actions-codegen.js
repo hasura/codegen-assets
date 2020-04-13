@@ -36,6 +36,29 @@ const getTypescriptTypename = (_typename, wrapperStack) => {
   return typename;
 }
 
+const getHasuraScalars = (ast) => {
+  let hasuraScalars = {};
+  ast.definitions.forEach(d => {
+    if (d.fields) {
+      d.fields.forEach(f => {
+        const fieldTypeMetadata = getWrappingTypeMetadata(f.type);
+        if (!ast.definitions.some(dd => dd.name.value === fieldTypeMetadata.typename)) {
+          hasuraScalars[fieldTypeMetadata.typename] = true;
+        }
+        if (f.arguments) {
+          f.arguments.forEach(a => {
+            const argTypeMetadata = getWrappingTypeMetadata(a.type);
+            if (!ast.definitions.some(dd => dd.name.value === argTypeMetadata.typename)) {
+              hasuraScalars[argTypeMetadata.typename] = true;
+            }
+          })
+        }
+      })
+    }
+  });
+  return Object.keys(hasuraScalars)
+};
+
 const templater = async (actionName, actionsSdl, derive) => {
 
   const ast = parse(`${actionsSdl}`);
@@ -56,8 +79,19 @@ const templater = async (actionName, actionsSdl, derive) => {
     allQueryActionFields = [...allQueryActionFields, ...qd.fields]
   });
 
+  // TODO (this is a temporary hack, must be fixed by accepting hasura scalars as a parameter)
+  const hasuraScalars = getHasuraScalars(ast);
+  const scalarsSdl = hasuraScalars.map(s => {
+    return `scalar ${s}`;
+  }).join('\n');
+  const scalarsAst = parse(scalarsSdl);
+  if (hasuraScalars.length) {
+    typesAst.definitions.push(...scalarsAst.definitions);
+  }
+
   const mutationRootDef = ast.definitions.find(d => d.name.value === 'Mutation');
   const queryRootDef = ast.definitions.find(d => d.name.value === 'Query');
+
   if (mutationRootDef) {
     mutationRootDef.kind = 'ObjectTypeDefinition';
     mutationRootDef.fields = allMutationActionFields;
@@ -69,7 +103,6 @@ const templater = async (actionName, actionsSdl, derive) => {
     queryRootDef.fields = allQueryActionFields;
     typesAst.definitions.push(queryRootDef);
   }
-  
 
   const codegenConfig = {
     schema: typesAst,
