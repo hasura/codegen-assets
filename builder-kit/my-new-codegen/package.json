@@ -1,0 +1,30 @@
+{
+  "name": "scratchpad",
+  "version": "1.0.2",
+  "main": "dist/app.js",
+  "ts:main": "src/index.ts",
+  "typings": "src/index.ts",
+  "license": "MIT",
+  "@comment scripts": [
+    "Fusebox produces bundles that can be x10-20 smaller than NCC due to tree-shaking.",
+    "You can use either, or use the other if the bundle one produces has errors",
+    "NCC does not permit passing an output file name, so it will output to 'index.js' in ./dist",
+    "You may want to rename this or rewrite config.yaml to point to index.js if using NCC"
+  ],
+  "scripts": {
+    "bundle-with-ncc": "yarn ncc build src/index.ts --out $INIT_CWD/dist",
+    "bundle-with-fusebox": "node ./fuse.js"
+  },
+  "dependencies": {
+    "common-tags": "^1.8.0",
+    "graphql": "^14.6.0",
+    "graphql-extra": "^0.2.2",
+    "verbal-expressions": "^1.0.2"
+  },
+  "devDependencies": {
+    "@types/node": "^13.9.0",
+    "@zeit/ncc": "^0.22.1",
+    "fuse-box": "^3.7.1",
+    "typescript": "^3.8.3"
+  }
+}
