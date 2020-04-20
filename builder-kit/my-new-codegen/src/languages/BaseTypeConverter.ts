@@ -82,7 +82,6 @@ export class TypeConverter {
     const { fieldFormatter } = this.config
     const { type, name, required } = field
     const nullable = !required
-    console.log(type)
     type.type = this.convertType(type)
     return indent(fieldFormatter(name, type, nullable))
   }

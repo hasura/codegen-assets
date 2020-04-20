@@ -13,7 +13,8 @@
   ],
   "scripts": {
     "bundle-with-ncc": "yarn ncc build src/index.ts --out $INIT_CWD/dist",
-    "bundle-with-fusebox": "node ./fuse.js"
+    "bundle-with-fusebox": "node ./fuse.js",
+    "debug": "cd src && nodemon debug.ts"
   },
   "dependencies": {
     "common-tags": "^1.8.0",

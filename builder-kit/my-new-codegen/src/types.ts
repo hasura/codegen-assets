@@ -1,3 +1,5 @@
+import { IntrospectionQuery } from 'graphql'
+
 /**
  * LanguageTypeConverterConfigs are stripped-down BaseTypeConverterConfig that require
  * the user provide only the schema and Action name, because in the constructor the rest of
@@ -60,6 +62,7 @@ export interface ActionParams {
 
 export interface CodegenTemplateParams extends ActionParams {
   typeDefs: string
+  derive: DeriveParams
 }
 
 /**
@@ -68,4 +71,91 @@ export interface CodegenTemplateParams extends ActionParams {
  */
 export interface ITypeMap {
   [key: string]: IField[]
+}
+
+/**
+ *  GENERATED TYPES FOR DERIVE INTROSPECTION RESPONSE USING QUICKTYPE.IO
+ *  THE INTROSPECTION QUERY RESPONSE IS NOT COMPATIBLE WITH GRAPHQL'S
+ *  "IntrospectionQuery" TYPE SO THESE WERE GENERATED AUTOMATICALLY
+ */
+
+/**
+ * A type for the "derive" parameter of codegen templates
+ * @interface DeriveParams
+ */
+export interface DeriveParams {
+  introspection_schema: IntrospectionSchema
+  operation: string
+  action_name?: string
+}
+
+export interface IntrospectionSchema {
+  __schema: Schema
+}
+
+export interface Schema {
+  directives: Directive[]
+  mutationType: Type
+  queryType: Type
+  subscriptionType: Type
+  types: TypeElement[]
+}
+
+export interface Directive {
+  args: Arg[]
+  description: null
+  locations: string[]
+  name: string
+}
+
+export interface Arg {
+  defaultValue: null | string
+  description: null | string
+  name: string
+  type: OfTypeClass
+}
+
+export interface OfTypeClass {
+  kind: Kind
+  name: null | string
+  ofType: OfTypeClass | null
+}
+
+export type Kind =
+  | 'ENUM'
+  | 'INPUT_OBJECT'
+  | 'LIST'
+  | 'NON_NULL'
+  | 'OBJECT'
+  | 'SCALAR'
+
+export interface Type {
+  name: string
+}
+
+export interface TypeElement {
+  description: null | string
+  enumValues: EnumValue[] | null
+  fields: Field[] | null
+  inputFields: Arg[] | null
+  interfaces: any[] | null
+  kind: Kind
+  name: string
+  possibleTypes: null
+}
+
+export interface EnumValue {
+  deprecationReason: null
+  description: null | string
+  isDeprecated: boolean
+  name: string
+}
+
+export interface Field {
+  args: Arg[]
+  deprecationReason: null
+  description: null | string
+  isDeprecated: boolean
+  name: string
+  type: OfTypeClass
 }

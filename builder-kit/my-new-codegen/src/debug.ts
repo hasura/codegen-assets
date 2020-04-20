@@ -16,16 +16,52 @@ import {
 } from './templates'
 
 import { buildActionTypes } from './schemaTools'
+import { customInsertUserDerive } from './exampleDerivePayload'
 
 import fs from 'fs'
+import { DeriveParams } from 'types'
 
 interface CodegenFile {
   name: string
   content: string
 }
 
-const templater = (actionName, actionSdl, derive): CodegenFile[] => {
+/**
+ * Example schema, InsertUserAction is non-Derived and CustomInsertUser is Derived
+ * CustomInsertUser has the Derive payload exported from exampleDerivePayload.ts
+ * as customInsertUserDerive
+ */
+const schemaSource = `
+  type Mutation {
+    InsertUserAction(user_info: UserInfo!): TokenOutput
+    CustomInsertUser(email: String!, name: String!): CustomInsertUserOutput
+  }
+
+  input UserInfo {
+    username: String!
+    password: String!
+  }
+
+  type TokenOutput {
+    accessToken: String!
+  }
+
+  type CustomInsertUserOutput {
+    email: String!
+    id: Int!
+    name: String!
+  }
+`
+
+const templater = (
+  actionName: string,
+  actionSdl: string,
+  derive: DeriveParams | null
+) => {
   const actionParams = buildActionTypes(actionName, actionSdl)
+  const templateParams = { ...actionParams, derive }
+
+  console.log('DERIVE IN TEMPLATER', derive)
 
   /**
    * Javascript
@@ -34,7 +70,7 @@ const templater = (actionName, actionSdl, derive): CodegenFile[] => {
     schema: actionSdl,
   })
   const jsCodegen = javascriptExpressTemplate({
-    ...actionParams,
+    ...templateParams,
     typeDefs: jsTypeConverter.generateTypes(),
   })
 
@@ -45,7 +81,7 @@ const templater = (actionName, actionSdl, derive): CodegenFile[] => {
     schema: actionSdl,
   })
   const tsCodegen = typescriptExpressTemplate({
-    ...actionParams,
+    ...templateParams,
     typeDefs: tsTypeConverter.generateTypes(),
   })
 
@@ -56,7 +92,7 @@ const templater = (actionName, actionSdl, derive): CodegenFile[] => {
     schema: actionSdl,
   })
   const goCodegen = goServeMuxTemplate({
-    ...actionParams,
+    ...templateParams,
     typeDefs: goTypeConverter.generateTypes(),
   })
 
@@ -67,7 +103,7 @@ const templater = (actionName, actionSdl, derive): CodegenFile[] => {
     schema: actionSdl,
   })
   const pythonCodeGen = pythonFastAPITemplate({
-    ...actionParams,
+    ...templateParams,
     typeDefs: pythonTypeConverter.generateTypes(),
   })
 
@@ -79,18 +115,18 @@ const templater = (actionName, actionSdl, derive): CodegenFile[] => {
   })
   const kotlinTypes = kotlinTypeConverter.generateTypes()
   const kotlinHttp4kCodegen = kotlinHttp4kTemplate({
-    ...actionParams,
+    ...templateParams,
     typeDefs: kotlinTypes,
   })
   const kotlinKtorCodegen = kotlinKtorTemplate({
-    ...actionParams,
+    ...templateParams,
     typeDefs: kotlinTypes,
   })
 
   /**
    * Response
    */
-  const response: CodegenFile[] = [
+  const response = [
     {
       name: actionName + 'TypescriptExpress.ts',
       content: tsCodegen,
@@ -119,30 +155,23 @@ const templater = (actionName, actionSdl, derive): CodegenFile[] => {
   return response
 }
 
-const schemaSource = `
-  type Mutation {
-    InsertUserAction(user_info: UserInfo!): TokenOutput
-  }
-
-  input UserInfo {
-    username: String!
-    password: String!
-  }
-
-  type TokenOutput {
-    accessToken: String!
-  }
-`
-
 const writeCodegenTemplate = (input: CodegenFile) => {
   const fd = fs.openSync(`./CodegenOutput/${input.name}`, 'w')
   fs.writeSync(fd, input.content)
 }
 
-const res = templater('InsertUserAction', schemaSource, false)
+const codegenNonDerived = templater('InsertUserAction', schemaSource, null)
+const codegenDerived = templater(
+  'CustomInsertUser',
+  schemaSource,
+  customInsertUserDerive
+)
 
-for (let codegen of res) {
-  console.log(codegen.name)
-  console.log(codegen.content)
+for (let codegen of codegenNonDerived) {
+  writeCodegenTemplate(codegen)
+}
+
+for (let codegen of codegenDerived) {
+  codegen.name = 'Derived' + codegen.name
   writeCodegenTemplate(codegen)
 }

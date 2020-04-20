@@ -19,6 +19,7 @@ import { buildActionTypes } from './schemaTools'
 
 const templater = (actionName, actionSdl, derive) => {
   const actionParams = buildActionTypes(actionName, actionSdl)
+  const templateParams = { ...actionParams, derive }
 
   /**
    * Javascript
@@ -27,7 +28,7 @@ const templater = (actionName, actionSdl, derive) => {
     schema: actionSdl,
   })
   const jsCodegen = javascriptExpressTemplate({
-    ...actionParams,
+    ...templateParams,
     typeDefs: jsTypeConverter.generateTypes(),
   })
 
@@ -38,7 +39,7 @@ const templater = (actionName, actionSdl, derive) => {
     schema: actionSdl,
   })
   const tsCodegen = typescriptExpressTemplate({
-    ...actionParams,
+    ...templateParams,
     typeDefs: tsTypeConverter.generateTypes(),
   })
 
@@ -49,7 +50,7 @@ const templater = (actionName, actionSdl, derive) => {
     schema: actionSdl,
   })
   const goCodegen = goServeMuxTemplate({
-    ...actionParams,
+    ...templateParams,
     typeDefs: goTypeConverter.generateTypes(),
   })
 
@@ -60,7 +61,7 @@ const templater = (actionName, actionSdl, derive) => {
     schema: actionSdl,
   })
   const pythonCodeGen = pythonFastAPITemplate({
-    ...actionParams,
+    ...templateParams,
     typeDefs: pythonTypeConverter.generateTypes(),
   })
 
@@ -72,11 +73,11 @@ const templater = (actionName, actionSdl, derive) => {
   })
   const kotlinTypes = kotlinTypeConverter.generateTypes()
   const kotlinHttp4kCodegen = kotlinHttp4kTemplate({
-    ...actionParams,
+    ...templateParams,
     typeDefs: kotlinTypes,
   })
   const kotlinKtorCodegen = kotlinKtorTemplate({
-    ...actionParams,
+    ...templateParams,
     typeDefs: kotlinTypes,
   })
 
@@ -110,27 +111,6 @@ const templater = (actionName, actionSdl, derive) => {
     },
   ]
   return response
-}
-
-const schemaSource = `
-  type Mutation {
-    InsertUserAction(user_info: UserInfo!): TokenOutput
-  }
-
-  input UserInfo {
-    username: String!
-    password: String!
-  }
-
-  type TokenOutput {
-    accessToken: String!
-  }
-`
-
-const res = templater('InsertUserAction', schemaSource, false)
-for (let codegen of res) {
-  console.log(codegen.name)
-  console.log(codegen.content)
 }
 
 globalThis.templater = templater
