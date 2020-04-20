@@ -60,9 +60,6 @@ const templater = (
 ) => {
   const actionParams = buildActionTypes(actionName, actionSdl)
   const templateParams = { ...actionParams, derive }
-
-  console.log('DERIVE IN TEMPLATER', derive)
-
   /**
    * Javascript
    */
