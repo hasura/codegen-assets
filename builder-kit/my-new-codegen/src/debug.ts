@@ -27,14 +27,11 @@ interface CodegenFile {
 }
 
 /**
- * Example schema, InsertUserAction is non-Derived and CustomInsertUser is Derived
- * CustomInsertUser has the Derive payload exported from exampleDerivePayload.ts
- * as customInsertUserDerive
+ * Example Non-Derived Schema, InsertUserAction is non-Derived Action
  */
-const schemaSource = `
+const nonDerivedSDL = `
   type Mutation {
     InsertUserAction(user_info: UserInfo!): TokenOutput
-    CustomInsertUser(email: String!, name: String!): CustomInsertUserOutput
   }
 
   input UserInfo {
@@ -44,6 +41,17 @@ const schemaSource = `
 
   type TokenOutput {
     accessToken: String!
+  }
+`
+
+/**
+ * Example Derived Schema, CustomInsertUser is a Derived Action
+ * CustomInsertUser has the Derive payload exported from exampleDerivePayload.ts
+ * as customInsertUserDerive
+ */
+const derivedSDL = `
+  type Mutation {
+    CustomInsertUser(email: String!, name: String!): CustomInsertUserOutput
   }
 
   type CustomInsertUserOutput {
@@ -157,10 +165,10 @@ const writeCodegenTemplate = (input: CodegenFile) => {
   fs.writeSync(fd, input.content)
 }
 
-const codegenNonDerived = templater('InsertUserAction', schemaSource, null)
+const codegenNonDerived = templater('InsertUserAction', nonDerivedSDL, null)
 const codegenDerived = templater(
   'CustomInsertUser',
-  schemaSource,
+  derivedSDL,
   customInsertUserDerive
 )
 
