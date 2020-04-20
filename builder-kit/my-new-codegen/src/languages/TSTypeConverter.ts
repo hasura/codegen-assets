@@ -13,12 +13,12 @@ export class TSTypeConverter extends TypeConverter {
     }
 
     const baseConfig: BaseTypeConverterConfig = {
+      isAction: config.isAction ?? true,
       schema: config.schema,
-      actionName: config.actionName,
       scalarMap,
       // type MyType = {  }
       typeClassIdentifier: (name) => `type ${name} = `,
-      typeDelimiters: ['{' + NEWLINE, NEWLINE + '}'],
+      typeDelimiters: ['{' + NEWLINE, NEWLINE + '}' + NEWLINE],
       fieldDelimiter: NEWLINE,
       fieldFormatter: (name, typeNode, nullable) => {
         let { required, list, type } = typeNode
@@ -31,7 +31,7 @@ export class TSTypeConverter extends TypeConverter {
         if (nullable) name = `${name}?`
         return `${name}: ${type}`
       },
-      extraTypes: `type Maybe<T> = T | null`,
+      prepend: `${NEWLINE}type Maybe<T> = T | null${NEWLINE} ${NEWLINE}`,
     }
     super(baseConfig)
   }

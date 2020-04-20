@@ -14,8 +14,8 @@ export class JSDocTypeConverter extends TypeConverter {
     }
 
     const baseConfig: BaseTypeConverterConfig = {
+      isAction: config.isAction ?? true,
       schema: config.schema,
-      actionName: config.actionName,
       scalarMap,
       typeClassIdentifier: (name) => template`
       /** 

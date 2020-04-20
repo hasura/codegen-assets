@@ -1,5 +1,5 @@
 import { ObjectTypeDefinitionNode } from 'graphql'
-import { IField, ITypeMap, ActionParams } from 'types'
+import { IField, ITypeMap, ActionParams } from './types'
 import {
   t,
   documentApi,
@@ -111,4 +111,19 @@ export function buildActionTypes(
   }
 
   return typeMap
+}
+
+/**
+ * Function that allows TypeConverters to generate TypeMap's for non-Hasura Action SDL
+ * In TypeConverter constructor, it checks whether it should generate
+ */
+export function buildBaseTypes(
+  sdl: string,
+  makeActionArgTypes: boolean = false
+) {
+  const document = documentApi().addSDL(sdl)
+  if (makeActionArgTypes) {
+    addActionArgumentTypesToSchema(document)
+  }
+  return buildTypeMap(document)
 }

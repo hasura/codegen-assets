@@ -17,7 +17,14 @@ import {
 
 import { buildActionTypes } from './schemaTools'
 
-const templater = (actionName, actionSdl, derive) => {
+import fs from 'fs'
+
+interface CodegenFile {
+  name: string
+  content: string
+}
+
+const templater = (actionName, actionSdl, derive): CodegenFile[] => {
   const actionParams = buildActionTypes(actionName, actionSdl)
 
   /**
@@ -83,7 +90,7 @@ const templater = (actionName, actionSdl, derive) => {
   /**
    * Response
    */
-  const response = [
+  const response: CodegenFile[] = [
     {
       name: actionName + 'TypescriptExpress.ts',
       content: tsCodegen,
@@ -127,10 +134,15 @@ const schemaSource = `
   }
 `
 
+const writeCodegenTemplate = (input: CodegenFile) => {
+  const fd = fs.openSync(`./CodegenOutput/${input.name}`, 'w')
+  fs.writeSync(fd, input.content)
+}
+
 const res = templater('InsertUserAction', schemaSource, false)
+
 for (let codegen of res) {
   console.log(codegen.name)
   console.log(codegen.content)
+  writeCodegenTemplate(codegen)
 }
-
-globalThis.templater = templater

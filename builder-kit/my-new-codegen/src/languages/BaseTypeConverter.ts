@@ -1,5 +1,5 @@
-import { ScalarMap, ITypeNode, ActionParams, IField } from '../types'
-import { buildActionTypes } from '../schemaTools'
+import { ScalarMap, ITypeNode, IField, ITypeMap } from '../types'
+import { buildBaseTypes } from '../schemaTools'
 import { NEWLINE, isScalar, indent } from '../utils'
 
 /**
@@ -7,30 +7,32 @@ import { NEWLINE, isScalar, indent } from '../utils'
  * that a language-specific converter needs to implement to define a mapping
  * between GraphQL types/scalars and the language's
  * @param schema Action SDL string
- * @param actionName Name of the Action
  * @param scalarMap A mapping
  * @param typeClassIdentifier What the identifier for a type is called in the language
+ * @param typeDelimiters the opening and closing characters for a "type" (IE curly braces, or parens for Kotlin Dataclasses)
  * @param fieldFormatter Function for how to format individual fields of a type in a class/struct/interface
+ * @param prepend optional text to put at the top of the type definitions
+ * @param postFormat optional function that takes the finalized typedefs string and allows for further processing
+ * @param isAction whether or not it's a Hasura Action (so that input argument types can be generated)
  */
 export interface BaseTypeConverterConfig {
   schema: string
-  actionName: string
   scalarMap: ScalarMap
   typeClassIdentifier: (type: string) => string
   typeDelimiters: [string, string]
   fieldDelimiter: string | null
   fieldFormatter: (name: string, type: ITypeNode, nullable: boolean) => string
-  extraTypes?: string
   prepend?: string
   postFormat?: (string) => string
+  isAction: boolean
 }
 
 export class TypeConverter {
   config: BaseTypeConverterConfig
-  actionParams: ActionParams
+  types: ITypeMap
   constructor(config: BaseTypeConverterConfig) {
     this.config = config
-    this.actionParams = buildActionTypes(config.actionName, config.schema)
+    this.types = buildBaseTypes(config.schema, config.isAction)
   }
   /**
    * Converts a TypeMap object to language-specific type definition strings
@@ -40,19 +42,15 @@ export class TypeConverter {
     const {
       typeClassIdentifier,
       typeDelimiters,
-      extraTypes,
       prepend,
       postFormat,
     } = this.config
     let typeDefs = ''
     // If there are extra types, start the type definitions out with them included
-    if (extraTypes) typeDefs += extraTypes + NEWLINE
     if (prepend) typeDefs += prepend
-
     const [openSymbol, closeSymbol] = typeDelimiters
-    const types = this.actionParams.types
     // Iterates the type of the Action params and generates language types for them one-by-one
-    for (let [type, fields] of Object.entries(types)) {
+    for (let [type, fields] of Object.entries(this.types)) {
       const typeName = typeClassIdentifier(type)
       const fieldTypes = this.getEntryFieldTypes(fields)
       const definition = typeName + openSymbol + fieldTypes + closeSymbol

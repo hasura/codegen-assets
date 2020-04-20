@@ -5,7 +5,7 @@
  */
 export interface LanguageTypeConverterConfig {
   schema: string
-  actionName: string
+  isAction?: boolean
 }
 
 /**
@@ -68,8 +68,4 @@ export interface CodegenTemplateParams extends ActionParams {
  */
 export interface ITypeMap {
   [key: string]: IField[]
-}
-
-export function x() {
-  return 1
 }

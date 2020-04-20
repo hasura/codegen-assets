@@ -43,8 +43,8 @@ export class PythonTypeConverter extends TypeConverter {
         .then(classAttributeRegex).oneOrMore()
 
     const baseConfig: BaseTypeConverterConfig = {
+      isAction: config.isAction ?? true,
       schema: config.schema,
-      actionName: config.actionName,
       scalarMap: pythonScalarMap,
       // type MyType struct {  }
       prepend:

@@ -12,8 +12,8 @@ export class KotlinTypeConverter extends TypeConverter {
     }
 
     const baseConfig: BaseTypeConverterConfig = {
+      isAction: config.isAction ?? true,
       schema: config.schema,
-      actionName: config.actionName,
       scalarMap: kotlinScalarMap,
       // data class MyType( )
       typeClassIdentifier: (name) => `data class ${name}`,
