@@ -1,9 +1,84 @@
 import { html as template } from 'common-tags'
 import { ITypeNode, CodegenTemplateParams } from '../types'
+import { getRootFieldName } from '../utils';
+
+const sampleValues = {
+  'Int': 1111,
+  'String': '"<sample value>"',
+  'Boolean': false,
+  'Float': 11.11,
+  'ID': 1111
+};
 
 export const goServeMuxTemplate = (params: CodegenTemplateParams) => {
-  const { actionArgs, actionName, returnType, typeDefs, types } = params
+  const { actionArgs, actionName, returnType, typeDefs, types, derive } = params
+  
+  const returnTypeDef = types[returnType]
+
+  let delegationTypedefs = derive ? template`
+    
+    type GraphQLRequest struct {
+      query string
+      variables CustomInsertUserArgs
+    }
+
+    type GraphQLData struct {
+      ${getRootFieldName(derive.operation)} CustomInsertUserOutput
+    }
+
+    type GraphQLError struct {
+      message string
+    }
+
+    type GraphQLResponse struct {
+      data GraphQLData
+      error []GraphQLError
+    }
+  ` : '';
+
+  let executeFunc = derive ? template`
+    func execute (variables: CustomInsertUserArgs) (response ${returnType}, err Error) {
+      reqBody := GraphQLRequest {
+        query: "${derive.operation}",
+        variables: variables
+      }
+      reqBytes, err := json.Marshal(reqBody)
+      if err != nil {
+        return
+      }
+      respBytes, err := http.Post("${derive.endpoint}", "application/json", bytes.NewBuffer(reqBytes))
+      if err != nil {
+        return
+      }
+      hasuraResponse, err := json.Unmarshal(respBytes, GraphQLResponse)
+      if err != nil {
+        return
+      }
+      response := hasuraResponse.data.${getRootFieldName(derive.operation)}
+      return;
+    }
+  ` : '';
+
+  let handlerFunc = derive ? template`
+    // Auto-generated function that takes the Action parameters and must return it's response type
+    func ${actionName}(args ${actionName}Args) (response ${returnType}, err Error) {
+      response, err := execute(args)
+      return
+    }   
+  ` : template`
+    // Auto-generated function that takes the Action parameters and must return it's response type
+    func ${actionName}(args ${actionName}Args) (${returnType}, Error) {
+      response := ${returnType} {
+        ${returnTypeDef.map(f => {
+          return `${f.name}: ${sampleValues[f.type.name]}`
+        }).join(',\n')}
+      }
+      return response, nil
+    }
+  `
+
   return template`
+
     package main
 
     import (
@@ -13,7 +88,8 @@ export const goServeMuxTemplate = (params: CodegenTemplateParams) => {
     )      
 
     ${typeDefs}
-
+    ${delegationTypedefs}
+ 
     func handler(w http.ResponseWriter, r *http.Request) {
       // Declare a new struct for unmarshalling the arguments
       var actionParams ${actionName}Args
@@ -27,7 +103,7 @@ export const goServeMuxTemplate = (params: CodegenTemplateParams) => {
       }
       
       // Send the request params to the Action's generated handler function
-      result := ${actionName}(actionParams)
+      result, err := ${actionName}(actionParams)
       data, err := json.Marshal(result)
       if err != nil {
         http.Error(w, err.Error(), http.StatusBadRequest)
@@ -40,11 +116,8 @@ export const goServeMuxTemplate = (params: CodegenTemplateParams) => {
       w.Write(data)
     }
 
-
-    // Auto-generated function that takes the Action parameters and must return it's response type
-    func ${actionName}(${actionName}Args) ${returnType} {
-
-    }
+    ${handlerFunc}
+    ${executeFunc}
 
     // HTTP server for the handler
     func main() {

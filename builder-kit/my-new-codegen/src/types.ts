@@ -84,9 +84,8 @@ export interface ITypeMap {
  * @interface DeriveParams
  */
 export interface DeriveParams {
-  introspection_schema: IntrospectionSchema
   operation: string
-  action_name?: string
+  endpoint: string
 }
 
 export interface IntrospectionSchema {
