@@ -1,5 +1,5 @@
 import { ObjectTypeDefinitionNode } from 'graphql'
-import { IField, ITypeMap, ActionParams, DeriveParams } from './types'
+import { IField, ITypeMap, ActionParams } from './types'
 import {
   t,
   documentApi,
@@ -126,14 +126,4 @@ export function buildBaseTypes(
     addActionArgumentTypesToSchema(document)
   }
   return buildTypeMap(document)
-}
-
-export function resolveDeriveMetadata (derive: DeriveParams) {
-  const { operation, endpoint } = derive;
-  const document = documentApi().addSDL(operation);
-  console.log(document);
-  return {
-    operation: "oolalal",
-    endpoint
-  }
 }
