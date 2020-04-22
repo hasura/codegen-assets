@@ -1,6 +1,6 @@
 import { html as template } from 'common-tags'
 import { CodegenTemplateParams } from '../types'
-import { NEWLINE } from 'utils'
+import { NEWLINE } from '../utils'
 
 export const typescriptExpressTemplate = (params: CodegenTemplateParams) => {
   const { actionArgs, actionName, returnType, typeDefs, types, derive } = params

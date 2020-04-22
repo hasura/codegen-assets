@@ -1,29 +1,30 @@
 import { html as template } from 'common-tags'
 import { ITypeNode, CodegenTemplateParams } from '../types'
-import { getRootFieldName } from '../utils';
+import { getRootFieldName, NEWLINE } from '../utils'
 
 const sampleValues = {
-  'Int': 1111,
-  'String': '"<sample value>"',
-  'Boolean': false,
-  'Float': 11.11,
-  'ID': 1111
-};
+  Int: 1111,
+  String: '"<sample value>"',
+  Boolean: false,
+  Float: 11.11,
+  ID: 1111,
+}
 
 export const goServeMuxTemplate = (params: CodegenTemplateParams) => {
   const { actionArgs, actionName, returnType, typeDefs, types, derive } = params
-  
+
   const returnTypeDef = types[returnType]
 
-  let delegationTypedefs = derive ? template`
+  let delegationTypedefs = derive
+    ? template`
     
     type GraphQLRequest struct {
       query string
-      variables CustomInsertUserArgs
+      variables ${actionName}Args
     }
 
     type GraphQLData struct {
-      ${getRootFieldName(derive.operation)} CustomInsertUserOutput
+      ${getRootFieldName(derive.operation)} ${actionName}Output
     }
 
     type GraphQLError struct {
@@ -34,19 +35,23 @@ export const goServeMuxTemplate = (params: CodegenTemplateParams) => {
       data GraphQLData
       error []GraphQLError
     }
-  ` : '';
+  `
+    : ''
 
-  let executeFunc = derive ? template`
-    func execute (variables: CustomInsertUserArgs) (response ${returnType}, err Error) {
+  let executeFunc = derive
+    ? template`
+    func execute (variables ${actionName}Args) (response ${returnType}, err Error) {
       reqBody := GraphQLRequest {
         query: "${derive.operation}",
-        variables: variables
+        variables: variables,
       }
       reqBytes, err := json.Marshal(reqBody)
       if err != nil {
         return
       }
-      respBytes, err := http.Post("${derive.endpoint}", "application/json", bytes.NewBuffer(reqBytes))
+      respBytes, err := http.Post("${
+        derive.endpoint
+      }", "application/json", bytes.NewBuffer(reqBytes))
       if err != nil {
         return
       }
@@ -57,21 +62,26 @@ export const goServeMuxTemplate = (params: CodegenTemplateParams) => {
       response := hasuraResponse.data.${getRootFieldName(derive.operation)}
       return;
     }
-  ` : '';
+  `
+    : ''
 
-  let handlerFunc = derive ? template`
+  const returnTypeValues = returnTypeDef
+    .map((f) => `${f.name}: ${sampleValues[f.type.name]}`)
+    .join(',' + NEWLINE)
+
+  let handlerFunc = derive
+    ? template`
     // Auto-generated function that takes the Action parameters and must return it's response type
     func ${actionName}(args ${actionName}Args) (response ${returnType}, err Error) {
       response, err := execute(args)
       return
     }   
-  ` : template`
+  `
+    : template`
     // Auto-generated function that takes the Action parameters and must return it's response type
     func ${actionName}(args ${actionName}Args) (${returnType}, Error) {
       response := ${returnType} {
-        ${returnTypeDef.map(f => {
-          return `${f.name}: ${sampleValues[f.type.name]}`
-        }).join(',\n')}
+        ${returnTypeValues}
       }
       return response, nil
     }

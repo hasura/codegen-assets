@@ -23,7 +23,7 @@ export interface BaseTypeConverterConfig {
   fieldDelimiter: string | null
   fieldFormatter: (name: string, type: ITypeNode, nullable: boolean) => string
   prepend?: string
-  postFormat?: (string) => string
+  postFormat?: (typeDefs: string) => string
   isAction: boolean
 }
 
