@@ -44,6 +44,8 @@ const nonDerivedSDL = `
     username: String!
     password: String!
     enum_field: SOME_ENUM!
+    nullable_field: Float
+    nullable_list: [Int]
   }
 
   type TokenOutput {
@@ -72,6 +74,8 @@ const derivedSDL = `
     id: Int!
     name: String!
     enum_value: SOME_ENUM
+    nullable_field: Float
+    nullable_list: [Int]
   }
 `
 
