@@ -17,17 +17,30 @@ export class JSDocTypeConverter extends TypeConverter {
       isAction: config.isAction ?? true,
       schema: config.schema,
       scalarMap,
-      typeClassIdentifier: (name) => template`
-      /** 
-        * @typedef {Object} ${name}
-        * `,
-      typeDelimiters: ['', `${NEWLINE} **/`],
-      fieldDelimiter: NEWLINE + '  *',
-      fieldFormatter: (name, typeNode, nullable) => {
-        let { required, list, type } = typeNode
-        if (!required) name = `[${name}]`
-        if (list) type = `Array<${type}>`
-        return `@property {${type}} ${name}`
+      typeConversionConfig: {
+        classIdentifier: (name) => template`
+        /** 
+          * @typedef {Object} ${name}
+          * `,
+        typeDelimiters: ['', `${NEWLINE} **/`],
+        fieldDelimiter: NEWLINE + '  *',
+        fieldFormatter: (name, typeNode, nullable) => {
+          let { required, list, type } = typeNode
+          if (!required) name = `[${name}]`
+          if (list) type = `Array<${type}>`
+          return `@property {${type}} ${name}`
+        },
+      },
+      enumConverionConfig: {
+        classIdentifier: (name) => template`
+        /** 
+          * @enum {String} ${name}
+          * `,
+        typeDelimiters: ['', `${NEWLINE} **/`],
+        fieldDelimiter: NEWLINE + '  *',
+        valueFormatter: (node) => {
+          return `  @property {${node.value}}`
+        },
       },
     }
     super(baseConfig)

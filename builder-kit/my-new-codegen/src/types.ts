@@ -36,6 +36,10 @@ export interface ITypeNode {
   list: boolean
 }
 
+export interface IEnumNode {
+  value: string
+}
+
 /**
  * A convenience interface for the reprensentation of a field type in GraphQL
  * Provides formatted information about name, type, nullability, and is list
@@ -61,7 +65,7 @@ export interface ActionParams {
 }
 
 export interface CodegenTemplateParams extends ActionParams {
-  typeDefs: string
+  typeDefs?: string
   derive: DeriveParams
 }
 
@@ -70,7 +74,12 @@ export interface CodegenTemplateParams extends ActionParams {
  * @interface ITypeMap
  */
 export interface ITypeMap {
-  [key: string]: IField[]
+  types: {
+    [key: string]: IField[]
+  }
+  enums: {
+    [key: string]: IEnumNode[]
+  }
 }
 
 /**

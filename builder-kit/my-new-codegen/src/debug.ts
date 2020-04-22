@@ -19,7 +19,7 @@ import { buildActionTypes } from './schemaTools'
 import { customInsertUserDerive } from './exampleDerivePayload'
 
 import fs from 'fs'
-import { DeriveParams } from 'types'
+import { DeriveParams } from './types'
 
 interface CodegenFile {
   name: string
@@ -34,9 +34,16 @@ const nonDerivedSDL = `
     InsertUserAction(user_info: UserInfo!): TokenOutput
   }
 
+  enum SOME_ENUM {
+    TYPE_A
+    TYPE_B
+    TYPE_C
+  }
+
   input UserInfo {
     username: String!
     password: String!
+    enum_field: SOME_ENUM!
   }
 
   type TokenOutput {
@@ -54,10 +61,17 @@ const derivedSDL = `
     CustomInsertUser(email: String!, name: String!): CustomInsertUserOutput
   }
 
+  enum SOME_ENUM {
+    TYPE_A
+    TYPE_B
+    TYPE_C
+  }
+
   type CustomInsertUserOutput {
     email: String!
     id: Int!
     name: String!
+    enum_value: SOME_ENUM
   }
 `
 

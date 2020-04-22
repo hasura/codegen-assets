@@ -13,7 +13,7 @@ const sampleValues = {
 export const goServeMuxTemplate = (params: CodegenTemplateParams) => {
   const { actionArgs, actionName, returnType, typeDefs, types, derive } = params
 
-  const returnTypeDef = types[returnType]
+  const returnTypeDef = types['types'][returnType]
 
   let delegationTypedefs = derive
     ? template`

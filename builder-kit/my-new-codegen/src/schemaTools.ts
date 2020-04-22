@@ -1,4 +1,4 @@
-import { ObjectTypeDefinitionNode } from 'graphql'
+import { ObjectTypeDefinitionNode, EnumValueDefinitionNode } from 'graphql'
 import { IField, ITypeMap, ActionParams } from './types'
 import {
   t,
@@ -8,6 +8,10 @@ import {
   FieldDefinitionApi,
   DocumentApi,
   TypeApi,
+  inputTypeApi,
+  enumValueApi,
+  enumTypeApi,
+  InputValueApi,
 } from 'graphql-extra'
 
 const serializeFieldType = (typeName: string, typeNode: TypeApi) => ({
@@ -24,7 +28,7 @@ const serializeFieldType = (typeName: string, typeNode: TypeApi) => ({
  * @param {FieldDefinitionApi} field
  * @returns {IField}
  */
-const serializeField = (field: FieldDefinitionApi): IField => ({
+const serializeField = (field: FieldDefinitionApi | InputValueApi): IField => ({
   name: field.getName(),
   type: serializeFieldType(field.getTypename(), field.getType()),
   required: field.isNonNullType(),
@@ -60,16 +64,36 @@ const addActionArgumentTypesToSchema = (document: DocumentApi) =>
  * Takes a Document API object and builds a map of it's types and their fields
  */
 function buildTypeMap(document: DocumentApi): ITypeMap {
-  let res = {}
-  for (let [typeName, astNode] of document.typeMap) {
-    res[typeName] = objectTypeApi(astNode as ObjectTypeDefinitionNode)
-      .getFields()
-      .map(serializeField)
+  let res = {
+    types: {},
+    enums: {},
   }
+
+  for (let [typeName, astNode] of document.typeMap) {
+    switch (astNode.kind) {
+      case 'InputObjectTypeDefinition':
+        res['types'][typeName] = inputTypeApi(astNode)
+          .getFields()
+          .map(serializeField)
+        break
+      case 'ObjectTypeDefinition':
+        res['types'][typeName] = objectTypeApi(astNode)
+          .getFields()
+          .map(serializeField)
+        break
+      case 'EnumTypeDefinition':
+        res['enums'][typeName] = enumTypeApi(astNode).node.values.map(
+          serializeEnumValue
+        )
+        break
+    }
+  }
+
   return res
 }
 
 type ActionType = 'Mutation' | 'Query'
+
 /**
  * Returns whether the Action is a Query or Mutation
  * Throws error if neither found
@@ -85,6 +109,11 @@ const getActionType = (doc: DocumentApi): ActionType => {
  */
 const mapSerializeFields = (node: ObjectTypeApi) =>
   node.getFields().map(serializeField)
+
+const serializeEnumValue = (node: EnumValueDefinitionNode) => {
+  const value = enumValueApi(node).getName()
+  return { value }
+}
 
 /**
  *

@@ -46,25 +46,39 @@ export class PythonTypeConverter extends TypeConverter {
       isAction: config.isAction ?? true,
       schema: config.schema,
       scalarMap: pythonScalarMap,
-      // type MyType struct {  }
       prepend:
         template`
         from dataclasses import dataclass
         from typing import List, Optional
+        from enum import Enum, auto
       ` + NEWLINE,
-      typeClassIdentifier: (name) => template`
-        @dataclass
-        class ${name}:`,
-      typeDelimiters: [NEWLINE, NEWLINE],
-      fieldDelimiter: indent(NEWLINE),
-      fieldFormatter: (name, typeNode, nullable) => {
-        let { list, type } = typeNode
-        // str -> List[str]
-        if (list) type = `List[${type}]`
-        // List[str] -> Optional[List[str]]
-        if (nullable) type = `Optional[${type}]`
-        // usernames: Optional[List[str]]
-        return `${name}: ${type}`
+      typeConversionConfig: {
+        classIdentifier: (name) => template`
+          @dataclass
+          class ${name}:`,
+        typeDelimiters: [NEWLINE, NEWLINE],
+        fieldDelimiter: indent(NEWLINE),
+        fieldFormatter: (name, typeNode, nullable) => {
+          let { list, type } = typeNode
+          // str -> List[str]
+          if (list) type = `List[${type}]`
+          // List[str] -> Optional[List[str]]
+          if (nullable) type = `Optional[${type}]`
+          // usernames: Optional[List[str]]
+          return `${name}: ${type}`
+        },
+      },
+      // from enum import Enum, auto
+      // class Color(Enum):
+      //   RED = auto()
+      //   BLUE = auto()
+      //   GREEN = auto()
+      enumConverionConfig: {
+        classIdentifier: (name) => template`
+          class ${name}(Enum):`,
+        typeDelimiters: [NEWLINE, NEWLINE],
+        fieldDelimiter: indent(NEWLINE),
+        valueFormatter: (node) => indent(`${node.value} = auto()`),
       },
       // Python disallows referencing variables before declaration
       // Which means the Dataclasses need to be in order, so Mutation/Query needs to go last
