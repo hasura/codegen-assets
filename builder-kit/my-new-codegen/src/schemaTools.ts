@@ -1,5 +1,5 @@
 import { ObjectTypeDefinitionNode } from 'graphql'
-import { ActionParams, ITypeMap2 } from './types'
+import { ActionParams, ITypeMap } from './types'
 import {
   t,
   documentApi,
@@ -40,8 +40,8 @@ export const addActionArgumentTypesToSchema = (document: DocumentApi) =>
 /**
  * Takes a Document API object and builds a map of it's types and their fields
  */
-function buildTypeMap(document: DocumentApi): ITypeMap2 {
-  let res: ITypeMap2 = {
+function buildTypeMap(document: DocumentApi): ITypeMap {
+  let res: ITypeMap = {
     types: {},
     enums: {},
   }

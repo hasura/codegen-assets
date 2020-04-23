@@ -1,8 +1,8 @@
-import { ScalarTypes, Fieldlike, ITypeMap2 } from '../types'
-import { serialize, isScalar2 } from '../utils'
+import { ScalarTypes, Fieldlike, ITypeMap } from '../types'
+import { serialize, isScalar } from '../utils'
 import { buildBaseTypes } from '../schemaTools'
 import { html as template } from 'common-tags'
-import { EnumValueApi, FieldDefinitionApi, InputValueApi } from 'graphql-extra'
+import { EnumValueApi } from 'graphql-extra'
 
 const scalarMap = {
   [ScalarTypes.ID]: 'number',
@@ -18,7 +18,7 @@ const baseTypes = template`
 const fieldFormatter = (field: Fieldlike) => {
   let { name, required, list, type } = serialize(field)
   // let { required, type, name } = field
-  let T = isScalar2(type) ? scalarMap[type] : type
+  let T = isScalar(type) ? scalarMap[type] : type
   // string -> Maybe<string>
   if (!required) T = `Maybe<${T}>`
   // Maybe<string> -> Array<Maybe<string>>
@@ -42,7 +42,7 @@ const tsTypeDef = (typeName: string, fields: Fieldlike[]): string => {
     }`
 }
 
-const typeMapToTSTypes = (typeMap: ITypeMap2) =>
+const typeMapToTSTypes = (typeMap: ITypeMap) =>
   Object.entries(typeMap.types)
     .map(([typeName, fields]) => tsTypeDef(typeName, fields))
     .join('\n\n')
@@ -58,12 +58,12 @@ const tsEnumDef = (typeName: string, fields: EnumValueApi[]): string => {
     }`
 }
 
-const typeMapToTSEnums = (typeMap: ITypeMap2) =>
+const typeMapToTSEnums = (typeMap: ITypeMap) =>
   Object.entries(typeMap.enums)
     .map(([typeName, fields]) => tsEnumDef(typeName, fields))
     .join('\n\n')
 
-const typeMapToTypescript = (typeMap: ITypeMap2) =>
+const typeMapToTypescript = (typeMap: ITypeMap) =>
   baseTypes +
   '\n\n' +
   typeMapToTSTypes(typeMap) +

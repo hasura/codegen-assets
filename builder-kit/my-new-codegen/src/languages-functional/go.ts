@@ -1,5 +1,5 @@
-import { ScalarTypes, Fieldlike, ITypeMap2 } from '../types'
-import { serialize, isScalar2 } from '../utils'
+import { ScalarTypes, Fieldlike, ITypeMap } from '../types'
+import { serialize, isScalar } from '../utils'
 import { buildBaseTypes } from '../schemaTools'
 import { html as template } from 'common-tags'
 import { EnumValueApi } from 'graphql-extra'
@@ -14,7 +14,7 @@ const scalarMap = {
 
 const fieldFormatter = (field: Fieldlike) => {
   let { name, required, list, type } = serialize(field)
-  let T = isScalar2(type) ? scalarMap[type] : type
+  let T = isScalar(type) ? scalarMap[type] : type
   if (!required) T = `*${T}`
   if (list) T = `[]${T}`
   return { name, type: T }
@@ -32,7 +32,7 @@ const goTypeDef = (typeName, fields: Fieldlike[]) => {
   `
 }
 
-const typeMapToGoTypes = (typeMap: ITypeMap2) =>
+const typeMapToGoTypes = (typeMap: ITypeMap) =>
   Object.entries(typeMap.types)
     .map(([typeName, fields]) => goTypeDef(typeName, fields))
     .join('\n\n')
@@ -49,7 +49,7 @@ const goEnumDef = (typeName, fields: EnumValueApi[]) => {
     .map((field, idx) =>
       idx == 0
         ? `${field.getName()} ${typeName} = "${field.getName()}"`
-        : `${field.getName()} = "${field.getName()}`
+        : `${field.getName()} = "${field.getName()}"`
     )
     .join('\n')
 
@@ -62,12 +62,12 @@ const goEnumDef = (typeName, fields: EnumValueApi[]) => {
   `
 }
 
-const typeMapToGoEnums = (typeMap: ITypeMap2) =>
+const typeMapToGoEnums = (typeMap: ITypeMap) =>
   Object.entries(typeMap.enums)
     .map(([typeName, fields]) => goEnumDef(typeName, fields))
     .join('\n\n')
 
-const typeMapToGo = (typeMap: ITypeMap2) =>
+const typeMapToGo = (typeMap: ITypeMap) =>
   typeMapToGoTypes(typeMap) + '\n\n' + typeMapToGoEnums(typeMap)
 
 export const graphqlSchemaToGo = (schema: string) =>

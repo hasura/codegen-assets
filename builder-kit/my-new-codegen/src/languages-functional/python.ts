@@ -1,5 +1,5 @@
-import { ScalarTypes, Fieldlike, ITypeMap2 } from '../types'
-import { indent, serialize, isScalar2 } from '../utils'
+import { ScalarTypes, Fieldlike, ITypeMap } from '../types'
+import { indent, serialize, isScalar } from '../utils'
 import { buildBaseTypes } from '../schemaTools'
 import { html as template } from 'common-tags'
 import VerEx from 'verbal-expressions'
@@ -20,7 +20,7 @@ const baseTypes = template`
 `
 const fieldFormatter = (field: Fieldlike) => {
   let { name, required, list, type } = serialize(field)
-  let T = isScalar2(type) ? scalarMap[type] : type
+  let T = isScalar(type) ? scalarMap[type] : type
   // str -> List[str]
   if (list) T = `List[${T}]`
   // List[str] -> Optional[List[str]]
@@ -40,7 +40,7 @@ const pythonTypeDef = (typeName: string, fields: Fieldlike[]): string => {
     `
 }
 
-const typeMapToPythonTypes = (typeMap: ITypeMap2) =>
+const typeMapToPythonTypes = (typeMap: ITypeMap) =>
   Object.entries(typeMap.types)
     .map(([typeName, fields]) => pythonTypeDef(typeName, fields))
     .join('\n\n')
@@ -56,12 +56,12 @@ const pythonEnumDef = (typeName: string, fields: EnumValueApi[]): string => {
     `
 }
 
-const typeMapToPythonEnums = (typeMap: ITypeMap2) =>
+const typeMapToPythonEnums = (typeMap: ITypeMap) =>
   Object.entries(typeMap.enums)
     .map(([typeName, fields]) => pythonEnumDef(typeName, fields))
     .join('\n\n')
 
-const typeMapToPython = (typeMap: ITypeMap2) =>
+const typeMapToPython = (typeMap: ITypeMap) =>
   baseTypes +
   '\n\n' +
   typeMapToPythonTypes(typeMap) +

@@ -1,5 +1,5 @@
-import { ScalarTypes, Fieldlike, ITypeMap2 } from '../types'
-import { serialize, isScalar2 } from '../utils'
+import { ScalarTypes, Fieldlike, ITypeMap } from '../types'
+import { serialize, isScalar } from '../utils'
 import { buildBaseTypes } from '../schemaTools'
 import { html as template } from 'common-tags'
 import { EnumValueApi } from 'graphql-extra'
@@ -14,7 +14,7 @@ const scalarMap = {
 
 const fieldFormatter = (field: Fieldlike) => {
   let { name, required, list, type } = serialize(field)
-  let T = isScalar2(type) ? scalarMap[type] : type
+  let T = isScalar(type) ? scalarMap[type] : type
   if (!required) T = `[${T}]`
   if (list) T = `Array<${T}>`
   return { name, type: T }
@@ -33,7 +33,7 @@ const jsdocTypeDef = (typeName, fields: Fieldlike[]) => {
     `
 }
 
-const typeMapToJSDocTypes = (typeMap: ITypeMap2) =>
+const typeMapToJSDocTypes = (typeMap: ITypeMap) =>
   Object.entries(typeMap.types)
     .map(([typeName, fields]) => jsdocTypeDef(typeName, fields))
     .join('\n\n')
@@ -51,12 +51,12 @@ const jsdocEnumDef = (typeName, fields: EnumValueApi[]) => {
     `
 }
 
-const typeMapToJSDocEnums = (typeMap: ITypeMap2) =>
+const typeMapToJSDocEnums = (typeMap: ITypeMap) =>
   Object.entries(typeMap.enums)
     .map(([typeName, fields]) => jsdocEnumDef(typeName, fields))
     .join('\n\n')
 
-const typeMapToJSDoc = (typeMap: ITypeMap2) =>
+const typeMapToJSDoc = (typeMap: ITypeMap) =>
   typeMapToJSDocTypes(typeMap) + '\n\n' + typeMapToJSDocEnums(typeMap)
 
 export const graphqlSchemaToJSDoc = (schema: string) =>

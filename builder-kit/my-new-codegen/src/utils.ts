@@ -1,4 +1,4 @@
-import { ITypeNode, ScalarTypes, Fieldlike } from './types'
+import { ScalarTypes, Fieldlike } from './types'
 import { parse } from 'graphql'
 
 export const NEWLINE = '\n'
@@ -9,11 +9,7 @@ export const indent = (string, tabSize = 2) => SPACE.repeat(tabSize) + string
 /**
  * Checks if type string exists in ScalarMap
  */
-export const isScalar = (type: ITypeNode) => {
-  return type?.name?.toUpperCase() in ScalarTypes
-}
-
-export const isScalar2 = (type: string) => {
+export const isScalar = (type: string) => {
   return type.toUpperCase() in ScalarTypes
 }
 

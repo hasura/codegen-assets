@@ -66,7 +66,7 @@ export interface ActionParams {
   actionName: string
   actionArgs: InputValueApi[]
   returnType: string
-  typeMap: ITypeMap2
+  typeMap: ITypeMap
 }
 
 export interface CodegenTemplateParams extends ActionParams {
@@ -74,22 +74,9 @@ export interface CodegenTemplateParams extends ActionParams {
   derive: DeriveParams | null
 }
 
-/**
- * A Typemap of schema types and their fields extracted and serialized
- * @interface ITypeMap
- */
-export interface ITypeMap {
-  types: {
-    [key: string]: IField[]
-  }
-  enums: {
-    [key: string]: IEnumNode[]
-  }
-}
-
 export type Fieldlike = FieldDefinitionApi | InputValueApi
 
-export interface ITypeMap2 {
+export interface ITypeMap {
   types: {
     [key: string]: Fieldlike[]
   }
