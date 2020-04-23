@@ -1,5 +1,5 @@
 import { TypeConverter, BaseTypeConverterConfig } from './BaseTypeConverter'
-import { NEWLINE } from '../utils'
+import { NEWLINE, capitalize } from '../utils'
 import { LanguageTypeConverterConfig, ScalarTypes } from '../types'
 
 export class GoTypeConverter extends TypeConverter {
@@ -27,7 +27,7 @@ export class GoTypeConverter extends TypeConverter {
         // []string -> *[]string
         if (nullable) type = `*${type}`
         // usernames []string*
-        return `${name} ${type}`
+        return `${capitalize(name)} ${type}  \`json:"${name}"\``
       },
     }
 
