@@ -3,7 +3,8 @@ import { CodegenTemplateParams } from '../types'
 
 // I am unsure of this one, need to have a Kotlin dev look this over probably
 export const kotlinHttp4kTemplate = (params: CodegenTemplateParams) => {
-  const { actionArgs, actionName, returnType, typeDefs, types } = params
+  const { actionArgs, actionName, returnType, typeDefs } = params
+
   return template`
      package org.hasura.my_action_handler
  

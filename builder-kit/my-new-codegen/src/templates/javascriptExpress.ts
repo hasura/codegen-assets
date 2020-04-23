@@ -3,7 +3,7 @@ import { CodegenTemplateParams } from '../types'
 
 // Use JSDoc Types for typeDefs args
 export const javascriptExpressTemplate = (params: CodegenTemplateParams) => {
-  const { actionArgs, actionName, returnType, typeDefs, types, derive } = params
+  const { actionName, typeDefs, derive } = params
 
   const baseTemplate = template`
     ${typeDefs}

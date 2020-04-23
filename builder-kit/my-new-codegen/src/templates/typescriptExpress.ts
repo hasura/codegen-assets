@@ -3,7 +3,7 @@ import { CodegenTemplateParams } from '../types'
 import { NEWLINE } from '../utils'
 
 export const typescriptExpressTemplate = (params: CodegenTemplateParams) => {
-  const { actionArgs, actionName, returnType, typeDefs, types, derive } = params
+  const { actionArgs, actionName, returnType, typeDefs, derive } = params
 
   const baseTemplate = template`
     import { Request, Response } from 'express'

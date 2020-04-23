@@ -1,38 +1,15 @@
-import { ObjectTypeDefinitionNode, EnumValueDefinitionNode } from 'graphql'
-import { IField, ITypeMap, ActionParams } from './types'
+import { ObjectTypeDefinitionNode } from 'graphql'
+import { ActionParams, ITypeMap2 } from './types'
 import {
   t,
   documentApi,
-  ObjectTypeApi,
   objectTypeApi,
   FieldDefinitionApi,
   DocumentApi,
-  TypeApi,
   inputTypeApi,
   enumValueApi,
   enumTypeApi,
-  InputValueApi,
 } from 'graphql-extra'
-
-const serializeFieldType = (typeName: string, typeNode: TypeApi) => ({
-  name: typeName,
-  type: typeNode.getTypename(),
-  required: typeNode.isNonNull(),
-  list: typeNode.isList(),
-})
-
-/**
- * Takes a Field from graphql-extra's FieldDefinitionApi and serializes it
- * to extract and format the important information:
- * Name, Type, Nullability, and whether it's a list
- * @param {FieldDefinitionApi} field
- * @returns {IField}
- */
-const serializeField = (field: FieldDefinitionApi | InputValueApi): IField => ({
-  name: field.getName(),
-  type: serializeFieldType(field.getTypename(), field.getType()),
-  required: field.isNonNullType(),
-})
 
 /**
  * Takes an argument from Action field in Schema
@@ -51,7 +28,7 @@ const makeActionArgType = (
  * Maps through the Mutation fields to grab Action and creates types
  * in the schema document for each of them for codegen
  */
-const addActionArgumentTypesToSchema = (document: DocumentApi) =>
+export const addActionArgumentTypesToSchema = (document: DocumentApi) =>
   document
     .getObjectType(getActionType(document))
     .getFields()
@@ -63,8 +40,8 @@ const addActionArgumentTypesToSchema = (document: DocumentApi) =>
 /**
  * Takes a Document API object and builds a map of it's types and their fields
  */
-function buildTypeMap(document: DocumentApi): ITypeMap {
-  let res = {
+function buildTypeMap(document: DocumentApi): ITypeMap2 {
+  let res: ITypeMap2 = {
     types: {},
     enums: {},
   }
@@ -72,18 +49,14 @@ function buildTypeMap(document: DocumentApi): ITypeMap {
   for (let [typeName, astNode] of document.typeMap) {
     switch (astNode.kind) {
       case 'InputObjectTypeDefinition':
-        res['types'][typeName] = inputTypeApi(astNode)
-          .getFields()
-          .map(serializeField)
+        res['types'][typeName] = inputTypeApi(astNode).getFields()
         break
       case 'ObjectTypeDefinition':
-        res['types'][typeName] = objectTypeApi(astNode)
-          .getFields()
-          .map(serializeField)
+        res['types'][typeName] = objectTypeApi(astNode).getFields()
         break
       case 'EnumTypeDefinition':
         res['enums'][typeName] = enumTypeApi(astNode).node.values.map(
-          serializeEnumValue
+          enumValueApi
         )
         break
     }
@@ -105,17 +78,6 @@ const getActionType = (doc: DocumentApi): ActionType => {
 }
 
 /**
- * Gets the fields of a GraphQL Object-type and map through them to serialize format
- */
-const mapSerializeFields = (node: ObjectTypeApi) =>
-  node.getFields().map(serializeField)
-
-const serializeEnumValue = (node: EnumValueDefinitionNode) => {
-  const value = enumValueApi(node).getName()
-  return { value }
-}
-
-/**
  *
  * @param {string} actionName
  * @param {string} actionSdl
@@ -130,16 +92,15 @@ export function buildActionTypes(
 
   const actionType = getActionType(document)
   const action = document.getObjectType(actionType).getField(actionName)
-  const actionArgType = document.getObjectType(actionName + 'Args')
 
-  let typeMap: ActionParams = {
+  let actionParams: ActionParams = {
     actionName: actionName,
     returnType: action.getTypename(),
-    actionArgs: mapSerializeFields(actionArgType),
-    types: buildTypeMap(document),
+    actionArgs: action.getArguments(),
+    typeMap: buildTypeMap(document),
   }
 
-  return typeMap
+  return actionParams
 }
 
 /**
@@ -148,11 +109,9 @@ export function buildActionTypes(
  */
 export function buildBaseTypes(
   sdl: string,
-  makeActionArgTypes: boolean = false
+  makeActionArgTypes: boolean = true
 ) {
   const document = documentApi().addSDL(sdl)
-  if (makeActionArgTypes) {
-    addActionArgumentTypesToSchema(document)
-  }
+  if (makeActionArgTypes) addActionArgumentTypesToSchema(document)
   return buildTypeMap(document)
 }

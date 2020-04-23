@@ -2,7 +2,8 @@ import { html as template } from 'common-tags'
 import { CodegenTemplateParams } from '../types'
 
 export const kotlinKtorTemplate = (params: CodegenTemplateParams) => {
-  const { actionArgs, actionName, returnType, typeDefs, types } = params
+  const { actionArgs, actionName, typeDefs } = params
+
   return template`
     package org.hasura.my_action_handler
 

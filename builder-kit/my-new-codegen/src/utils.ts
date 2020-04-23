@@ -1,5 +1,5 @@
-import { ITypeNode, ScalarTypes } from './types'
-import { parse } from 'graphql';
+import { ITypeNode, ScalarTypes, Fieldlike } from './types'
+import { parse } from 'graphql'
 
 export const NEWLINE = '\n'
 const SPACE = ' '
@@ -13,13 +13,29 @@ export const isScalar = (type: ITypeNode) => {
   return type?.name?.toUpperCase() in ScalarTypes
 }
 
+export const isScalar2 = (type: string) => {
+  return type.toUpperCase() in ScalarTypes
+}
+
 /**
  * Returns the first root field from an operation
  * Ex: Returns "user" if the operation is "query { user { id name } articles { title content } }"
  */
 export const getRootFieldName = (operationString: string) => {
-  const doc = parse(operationString);
-  const operation: any = doc.definitions[0];
-  const selection = operation.selectionSet.selections[0];
-  return selection.alias ? selection.alias.value : selection.name.value;
-};
+  const doc = parse(operationString)
+  const operation: any = doc.definitions[0]
+  const selection = operation.selectionSet.selections[0]
+  return selection.alias ? selection.alias.value : selection.name.value
+}
+
+/**
+ * Takes a Field from graphql-extra's FieldDefinitionApi and serializes it
+ * to extract and format the important information:
+ * Name, Type, Nullability, and whether it's a list
+ */
+export const serialize = (field: Fieldlike) => ({
+  name: field.getName(),
+  required: field.isNonNullType(),
+  list: field.isListType(),
+  type: field.getTypename(),
+})

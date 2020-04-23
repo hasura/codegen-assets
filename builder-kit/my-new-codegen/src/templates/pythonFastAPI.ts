@@ -2,7 +2,7 @@ import { html as template } from 'common-tags'
 import { CodegenTemplateParams } from '../types'
 
 export const pythonFastAPITemplate = (params: CodegenTemplateParams) => {
-  const { actionArgs, actionName, returnType, typeDefs, types } = params
+  const { actionArgs, actionName, returnType, typeDefs } = params
 
   let baseTemplate: string = template`
     class Config:

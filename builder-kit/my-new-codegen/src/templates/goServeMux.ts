@@ -11,9 +11,9 @@ const sampleValues = {
 }
 
 export const goServeMuxTemplate = (params: CodegenTemplateParams) => {
-  const { actionArgs, actionName, returnType, typeDefs, types, derive } = params
+  const { actionName, returnType, typeDefs, derive, typeMap } = params
 
-  const returnTypeDef = types['types'][returnType]
+  const returnTypeDef = typeMap.types[returnType]
 
   let delegationTypedefs = derive
     ? template`
@@ -66,7 +66,7 @@ export const goServeMuxTemplate = (params: CodegenTemplateParams) => {
     : ''
 
   const returnTypeValues = returnTypeDef
-    .map((f) => `${f.name}: ${sampleValues[f.type.name]}`)
+    .map((f) => `${f.getName()}: ${sampleValues[f.getTypename()]}`)
     .join(',' + NEWLINE)
 
   let handlerFunc = derive

@@ -1,3 +1,10 @@
+import {
+  FieldDefinitionApi,
+  EnumValueApi,
+  ArgumentApi,
+  InputValueApi,
+} from 'graphql-extra'
+
 /**
  * LanguageTypeConverterConfigs are stripped-down BaseTypeConverterConfig that require
  * the user provide only the schema and Action name, because in the constructor the rest of
@@ -57,9 +64,9 @@ export interface IField {
  */
 export interface ActionParams {
   actionName: string
-  actionArgs: IField[]
+  actionArgs: InputValueApi[]
   returnType: string
-  types: ITypeMap
+  typeMap: ITypeMap2
 }
 
 export interface CodegenTemplateParams extends ActionParams {
@@ -77,6 +84,17 @@ export interface ITypeMap {
   }
   enums: {
     [key: string]: IEnumNode[]
+  }
+}
+
+export type Fieldlike = FieldDefinitionApi | InputValueApi
+
+export interface ITypeMap2 {
+  types: {
+    [key: string]: Fieldlike[]
+  }
+  enums: {
+    [key: string]: EnumValueApi[]
   }
 }
 
