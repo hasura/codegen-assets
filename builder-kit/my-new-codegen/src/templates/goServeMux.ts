@@ -15,7 +15,7 @@ export const goServeMuxTemplate = (params: CodegenTemplateParams) => {
 
   const returnTypeDef = typeMap.types[returnType]
 
-  let delegationTypedefs = derive
+  let delegationTypedefs = derive?.operation
     ? template`
     
     type GraphQLRequest struct {
@@ -38,7 +38,7 @@ export const goServeMuxTemplate = (params: CodegenTemplateParams) => {
   `
     : ''
 
-  let executeFunc = derive
+  let executeFunc = derive?.operation
     ? template`
     func execute (variables ${actionName}Args) (response ${returnType}, err Error) {
       reqBody := GraphQLRequest {

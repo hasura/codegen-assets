@@ -87,7 +87,11 @@ export function buildActionTypes(
   actionName: string,
   sdl: string
 ): ActionParams {
-  const document = documentApi().addSDL(sdl)
+  // Remove the "extend" directive from mutation/query types so they work properly
+  // The console converts regular Mutation/Query types into extend type Mutation/Query
+  // which do not appear in the document Typemap and break the functionality.
+  const convertedSdl = removeExtendDirectives(sdl)
+  const document = documentApi().addSDL(convertedSdl)
   addActionArgumentTypesToSchema(document)
 
   const actionType = getActionType(document)
@@ -111,7 +115,18 @@ export function buildBaseTypes(
   sdl: string,
   makeActionArgTypes: boolean = true
 ) {
-  const document = documentApi().addSDL(sdl)
+  // Remove the "extend" directive from mutation/query types so they work properly
+  // The console converts regular Mutation/Query types into extend type Mutation/Query
+  // which do not appear in the document Typemap and break the functionality.
+  const convertedSdl = removeExtendDirectives(sdl)
+  const document = documentApi().addSDL(convertedSdl)
   if (makeActionArgTypes) addActionArgumentTypesToSchema(document)
   return buildTypeMap(document)
 }
+
+/**
+ * We need this because "extend" removes the type from the Typemap
+ * so we trim it and pretend it's just a regular Mutation/Query
+ */
+export const removeExtendDirectives = (sdl: string) =>
+  sdl.replace(/extend/g, '')

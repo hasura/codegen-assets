@@ -1,7 +1,6 @@
 import { Request, Response } from 'express'
-
 type Maybe<T> = T | null
- 
+
 type Mutation = {
   InsertUserAction?: Maybe<TokenOutput>
 }
@@ -27,8 +26,6 @@ enum SOME_ENUM {
   TYPE_B = 'TYPE_B',
   TYPE_C = 'TYPE_C'
 }
-
-
 
 function InsertUserActionHandler(args: InsertUserActionArgs): TokenOutput {
 

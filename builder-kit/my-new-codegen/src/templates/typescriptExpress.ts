@@ -72,6 +72,6 @@ export const typescriptExpressTemplate = (params: CodegenTemplateParams) => {
     })
   `
 
-  if (derive) return derivedTemplate
+  if (derive?.operation) return derivedTemplate
   else return baseTemplate
 }

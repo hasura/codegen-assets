@@ -18,10 +18,14 @@ export const isScalar = (type: string) => {
  * Ex: Returns "user" if the operation is "query { user { id name } articles { title content } }"
  */
 export const getRootFieldName = (operationString: string) => {
-  const doc = parse(operationString)
-  const operation: any = doc.definitions[0]
-  const selection = operation.selectionSet.selections[0]
-  return selection.alias ? selection.alias.value : selection.name.value
+  try {
+    const doc = parse(operationString)
+    const operation: any = doc.definitions[0]
+    const selection = operation.selectionSet.selections[0]
+    return selection.alias ? selection.alias.value : selection.name.value
+  } catch (err) {
+    console.error('Got error in getRootFieldName:', err)
+  }
 }
 
 /**
