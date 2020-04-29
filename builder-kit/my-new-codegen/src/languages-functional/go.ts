@@ -2,7 +2,7 @@ import { ScalarTypes, Fieldlike, ITypeMap } from '../types'
 import { serialize, isScalar } from '../utils'
 import { buildBaseTypes } from '../schemaTools'
 import { html as template } from 'common-tags'
-import { EnumValueApi } from 'graphql-extra'
+import { EnumValueApi, ScalarTypeApi } from 'graphql-extra'
 
 const scalarMap = {
   [ScalarTypes.ID]: `int`,
@@ -62,13 +62,26 @@ const goEnumDef = (typeName, fields: EnumValueApi[]) => {
   `
 }
 
+const goScalarDef = (scalarType: ScalarTypeApi) =>
+  `type ${scalarType.getName()} string`
+
 const typeMapToGoEnums = (typeMap: ITypeMap) =>
   Object.entries(typeMap.enums)
     .map(([typeName, fields]) => goEnumDef(typeName, fields))
     .join('\n\n')
 
+
+const typeMapToGoScalars = (typeMap: ITypeMap) =>
+  Object.entries(typeMap.scalars)
+    .map(([_, scalarType]) => goScalarDef(scalarType))
+    .join('\n\n')
+
 const typeMapToGo = (typeMap: ITypeMap) =>
-  typeMapToGoTypes(typeMap) + '\n\n' + typeMapToGoEnums(typeMap)
+  typeMapToGoScalars(typeMap)
+  + '\n\n' +
+  typeMapToGoEnums(typeMap)
+  + '\n\n' +
+  typeMapToGoTypes(typeMap)
 
 export const graphqlSchemaToGo = (schema: string) =>
   typeMapToGo(buildBaseTypes(schema))

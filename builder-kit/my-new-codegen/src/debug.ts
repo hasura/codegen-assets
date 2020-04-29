@@ -40,9 +40,12 @@ const nonDerivedSDL = `
     TYPE_C
   }
 
+  scalar Email
+
   input UserInfo {
     username: String!
     password: String!
+    email: Email!
     enum_field: SOME_ENUM!
     nullable_field: Float
     nullable_list: [Int]
@@ -50,6 +53,7 @@ const nonDerivedSDL = `
 
   type TokenOutput {
     accessToken: String!
+    email: Email!
   }
 `
 
@@ -59,8 +63,11 @@ const nonDerivedSDL = `
  * as customInsertUserDerive
  */
 const derivedSDL = `
+
+  scalar Email
+
   type Mutation {
-    CustomInsertUser(email: String!, name: String!): CustomInsertUserOutput
+    CustomInsertUser(email: Email!, name: String!): CustomInsertUserOutput
   }
 
   enum SOME_ENUM {
@@ -73,6 +80,7 @@ const derivedSDL = `
     email: String!
     id: Int!
     name: String!
+    email: Email!
     enum_value: SOME_ENUM
     nullable_field: Float
     nullable_list: [Int]

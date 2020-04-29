@@ -1,8 +1,10 @@
 import {
   FieldDefinitionApi,
   EnumValueApi,
+  ScalarTypeApi,
   ArgumentApi,
   InputValueApi,
+  ScalarTypeDefinitionNodeProps
 } from 'graphql-extra'
 
 /**
@@ -88,6 +90,9 @@ export interface ITypeMap {
   }
   enums: {
     [key: string]: EnumValueApi[]
+  },
+  scalars: {
+    [key: string]: ScalarTypeApi
   }
 }
 

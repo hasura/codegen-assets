@@ -92,7 +92,7 @@ export const goServeMuxTemplate = (params: CodegenTemplateParams) => {
     func ${actionName}(args ${actionName}Args) (response ${returnType}, err error) {
       response =  ${returnType} {
         ${returnTypeDef.map(f => {
-          return `${capitalize(f.getName())}: ${sampleValues[f.getName()]}`
+          return `${capitalize(f.getName())}: ${sampleValues[f.getType().getTypename()] || sampleValues["String"]}`
         }).join(',\n')},
       }
       return response, nil

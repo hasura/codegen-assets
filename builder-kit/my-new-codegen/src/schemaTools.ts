@@ -9,6 +9,7 @@ import {
   inputTypeApi,
   enumValueApi,
   enumTypeApi,
+  scalarTypeApi
 } from 'graphql-extra'
 
 /**
@@ -44,7 +45,9 @@ function buildTypeMap(document: DocumentApi): ITypeMap {
   let res: ITypeMap = {
     types: {},
     enums: {},
+    scalars: {}
   }
+
 
   for (let [typeName, astNode] of document.typeMap) {
     switch (astNode.kind) {
@@ -59,6 +62,9 @@ function buildTypeMap(document: DocumentApi): ITypeMap {
           enumValueApi
         )
         break
+      case 'ScalarTypeDefinition':
+        res['scalars'][typeName] = scalarTypeApi(astNode)
+        break;
     }
   }
 
