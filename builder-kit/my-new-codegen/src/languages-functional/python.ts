@@ -2,7 +2,6 @@ import { ScalarTypes, Fieldlike, ITypeMap } from '../types'
 import { indent, serialize, isScalar } from '../utils'
 import { buildBaseTypes } from '../schemaTools'
 import { html as template } from 'common-tags'
-import VerEx from 'verbal-expressions'
 import { EnumValueApi } from 'graphql-extra'
 
 const scalarMap = {
@@ -70,41 +69,3 @@ const typeMapToPython = (typeMap: ITypeMap) =>
 
 export const graphqlSchemaToPython = (schema: string) =>
   typeMapToPython(buildBaseTypes(schema))
-
-/**
- * VerbalExpressions match for attributes like the "int" and "another" lines below
- * @dataclass
- * class MyClass:
- *   something: int
- *   another: Optional[List[str]]
- */
-// prettier-ignore
-const classAttributeRegex =
-  VerEx().lineBreak().whitespace().oneOrMore()
-    .word(/* my_attribute */).then(':').whitespace().word().maybe('[')
-        .maybe(VerEx().word(/* Optional[List[str]] */))
-    .maybe(']')
-    .maybe(" = None")
-
-/**
- * VerbalExpressions match for entire Mutation/Query Dataclass
- * @dataclass
- * class Mutation:
- *   MyHasuraAction: Optional[MyType]
- */
-// prettier-ignore
-const mutationOrQueryDataClassRegex =
-  VerEx().find('@dataclass').lineBreak()
-    .then('class ').maybe('Mutation:').maybe('Query:')
-    .then(classAttributeRegex).oneOrMore()
-
-// This still doesn't really work, need to build a directed acyclic graph of type-dependencies or something to get proper order
-const postFormat = (typeDefs) => {
-  const match = mutationOrQueryDataClassRegex.exec(typeDefs)
-  // If found, replace the definition at the top with empty string, then append to end
-  if (match) {
-    const [dataClassText] = match
-    typeDefs = typeDefs.replace(dataClassText, '') + '\n\n' + dataClassText
-  }
-  return typeDefs
-}
