@@ -1,5 +1,5 @@
 import { ScalarTypes, Fieldlike, ITypeMap } from '../types'
-import { serialize, isScalar } from '../utils'
+import { serialize, isScalar, capitalize } from '../utils'
 import { buildBaseTypes } from '../schemaTools'
 import { html as template } from 'common-tags'
 import { EnumValueApi, ScalarTypeApi } from 'graphql-extra'
@@ -22,7 +22,7 @@ const fieldFormatter = (field: Fieldlike) => {
 const goTypeDef = (typeName, fields: Fieldlike[]) => {
   const fieldDefs = fields
     .map(fieldFormatter)
-    .map(({ name, type }) => `${name} ${type}`)
+    .map(({ name, type }) => `${capitalize(name)} ${type}`)
     .join('\n')
 
   return template`
@@ -48,8 +48,8 @@ const goEnumDef = (typeName, fields: EnumValueApi[]) => {
   const fieldDefs = fields
     .map((field, idx) =>
       idx == 0
-        ? `${field.getName()} ${typeName} = "${field.getName()}"`
-        : `${field.getName()} = "${field.getName()}"`
+        ? `${capitalize(field.getName())} ${typeName} = "${capitalize(field.getName())}"`
+        : `${capitalize(field.getName())} = "${capitalize(field.getName())}"`
     )
     .join('\n')
 
@@ -63,7 +63,7 @@ const goEnumDef = (typeName, fields: EnumValueApi[]) => {
 }
 
 const goScalarDef = (scalarType: ScalarTypeApi) =>
-  `type ${scalarType.getName()} string`
+  `type ${capitalize(scalarType.getName())} string`
 
 const typeMapToGoEnums = (typeMap: ITypeMap) =>
   Object.entries(typeMap.enums)
