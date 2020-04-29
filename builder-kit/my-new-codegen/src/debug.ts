@@ -31,7 +31,7 @@ interface CodegenFile {
  */
 const nonDerivedSDL = `
   type Mutation {
-    InsertUserAction(user_info: UserInfo!): TokenOutput
+    InsertUserAction(user_info: UserInfo!): UserOutput
   }
 
   enum SOME_ENUM {
@@ -46,14 +46,18 @@ const nonDerivedSDL = `
     username: String!
     password: String!
     email: Email!
+    age: Int
+    birthDate: timestamptz!
     enum_field: SOME_ENUM!
     nullable_field: Float
     nullable_list: [Int]
   }
 
-  type TokenOutput {
+  type UserOutput {
     accessToken: String!
+    age: Int
     email: Email!
+    birthDate: timestamptz
   }
 `
 
@@ -67,7 +71,7 @@ const derivedSDL = `
   scalar Email
 
   type Mutation {
-    CustomInsertUser(email: Email!, name: String!): CustomInsertUserOutput
+    CustomInsertUser(email: Email!, name: String! birthDate: timestamptz!): CustomInsertUserOutput
   }
 
   enum SOME_ENUM {
@@ -77,13 +81,14 @@ const derivedSDL = `
   }
 
   type CustomInsertUserOutput {
-    email: String!
     id: Int!
     name: String!
     email: Email!
+    birthDate: timestamptz!
     enum_value: SOME_ENUM
     nullable_field: Float
     nullable_list: [Int]
+    arbit_field: [[String!]!]
   }
 `
 
