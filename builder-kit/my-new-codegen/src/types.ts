@@ -29,6 +29,12 @@ export type ScalarMap = {
   [key in ScalarTypes]: string
 }
 
+/**
+ * @param name the original type/name of the type
+ * @param type the converted language-specific type (if scalar)
+ * @param required whether the type is required or not
+ * @param list whether the type is a list/array
+ */
 export interface ITypeNode {
   name: string
   type: string
