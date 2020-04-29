@@ -2,7 +2,8 @@ import {
   ObjectTypeDefinitionNode,
   ScalarTypeDefinitionNode
 } from 'graphql'
-import { ActionParams, ITypeMap } from './types'
+import { ActionParams, ITypeMap, ScalarTypes } from './types'
+import { isScalar } from './utils'
 import {
   t,
   documentApi,
@@ -81,7 +82,7 @@ function buildTypeMap(document: DocumentApi): ITypeMap {
   const populatePostgresScalars = (fields: (InputValueApi | FieldDefinitionApi)[]) => {
     fields.forEach(f => {
       const fieldTypename = f.getType().getTypename();
-      if(!allTypes[fieldTypename]) {
+      if(!allTypes[fieldTypename] && !isScalar(fieldTypename)) {
         const newScalarApi = scalarTypeApi(createScalarTypeDefinitioNode(fieldTypename))
         res.scalars[fieldTypename] = newScalarApi;
         allTypes[fieldTypename] = true
