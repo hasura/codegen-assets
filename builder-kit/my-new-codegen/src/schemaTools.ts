@@ -165,49 +165,6 @@ export function buildActionTypes(
   return actionParams
 }
 
-enum REQUEST_STATE {
-  INIT = 'init',
-  LOADING = 'loading',
-  DONE = 'done',
-  ERROR = 'error',
-}
-
-type APIState<
-  DataType,
-  Status extends REQUEST_STATE,
-  Err extends string | null
-> = {
-  data: DataType | null
-  status: Status
-  error: null | string
-}
-
-export type FromAPI2<DataType> =
-  | APIState<DataType, REQUEST_STATE.DONE, null>
-  | APIState<DataType, REQUEST_STATE.DONE>
-
-export type FromAPI<DataType> =
-  | {
-      data: DataType
-      status: 'done'
-      error: null
-    }
-  | {
-      data: null
-      status: 'init'
-      error: null
-    }
-  | {
-      data: null
-      status: 'loading'
-      error: null
-    }
-  | {
-      data: null
-      status: 'error'
-      error: string
-    }
-
 /**
  * Function that allows TypeConverters to generate TypeMap's for non-Hasura Action SDL
  * In TypeConverter constructor, it checks whether it should generate
