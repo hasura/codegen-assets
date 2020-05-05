@@ -1,7 +1,4 @@
-import {
-  ObjectTypeDefinitionNode,
-  ScalarTypeDefinitionNode
-} from 'graphql'
+import { ObjectTypeDefinitionNode, ScalarTypeDefinitionNode } from 'graphql'
 import { ActionParams, ITypeMap, ScalarTypes } from './types'
 import { isScalar } from './utils'
 import {
@@ -49,18 +46,20 @@ export const createScalarTypeDefinitioNode = (
   description?: string
 ) => {
   const node: ScalarTypeDefinitionNode = {
-    kind: "ScalarTypeDefinition",
+    kind: 'ScalarTypeDefinition',
     name: {
-      kind: "Name",
+      kind: 'Name',
       value: name,
     },
-    description: description ? {
-      kind: "StringValue",
-      value: description,
-    } : null
+    description: description
+      ? {
+          kind: 'StringValue',
+          value: description,
+        }
+      : null,
   }
-  return node;
-};
+  return node
+}
 
 /**
  * Takes a Document API object and builds a map of it's types and their fields
@@ -69,22 +68,26 @@ function buildTypeMap(document: DocumentApi): ITypeMap {
   let res: ITypeMap = {
     types: {},
     enums: {},
-    scalars: {}
+    scalars: {},
   }
 
   // get a map of all types in the document
-  const allTypes: Record <string, any> = {};
-  document.typeMap.forEach(t => {
-    allTypes[t.name.value] = true;
-  });
+  const allTypes: Record<string, any> = {}
+  document.typeMap.forEach((t) => {
+    allTypes[t.name.value] = true
+  })
 
   // consider a field type to be postgres scalar if it is not found in the doc
-  const populatePostgresScalars = (fields: (InputValueApi | FieldDefinitionApi)[]) => {
-    fields.forEach(f => {
-      const fieldTypename = f.getType().getTypename();
-      if(!allTypes[fieldTypename] && !isScalar(fieldTypename)) {
-        const newScalarApi = scalarTypeApi(createScalarTypeDefinitioNode(fieldTypename))
-        res.scalars[fieldTypename] = newScalarApi;
+  const populatePostgresScalars = (
+    fields: (InputValueApi | FieldDefinitionApi)[]
+  ) => {
+    fields.forEach((f) => {
+      const fieldTypename = f.getType().getTypename()
+      if (!allTypes[fieldTypename] && !isScalar(fieldTypename)) {
+        const newScalarApi = scalarTypeApi(
+          createScalarTypeDefinitioNode(fieldTypename)
+        )
+        res.scalars[fieldTypename] = newScalarApi
         allTypes[fieldTypename] = true
       }
     })
@@ -93,14 +96,14 @@ function buildTypeMap(document: DocumentApi): ITypeMap {
   for (let [typeName, astNode] of document.typeMap) {
     switch (astNode.kind) {
       case 'InputObjectTypeDefinition': {
-        const fields = inputTypeApi(astNode).getFields();
-        populatePostgresScalars(fields);
+        const fields = inputTypeApi(astNode).getFields()
+        populatePostgresScalars(fields)
         res['types'][typeName] = fields
         break
       }
       case 'ObjectTypeDefinition': {
-        const fields = objectTypeApi(astNode).getFields();
-        populatePostgresScalars(fields);
+        const fields = objectTypeApi(astNode).getFields()
+        populatePostgresScalars(fields)
         res['types'][typeName] = fields
         break
       }
@@ -112,7 +115,7 @@ function buildTypeMap(document: DocumentApi): ITypeMap {
       }
       case 'ScalarTypeDefinition': {
         res['scalars'][typeName] = scalarTypeApi(astNode)
-        break;
+        break
       }
     }
   }
@@ -161,6 +164,49 @@ export function buildActionTypes(
 
   return actionParams
 }
+
+enum REQUEST_STATE {
+  INIT = 'init',
+  LOADING = 'loading',
+  DONE = 'done',
+  ERROR = 'error',
+}
+
+type APIState<
+  DataType,
+  Status extends REQUEST_STATE,
+  Err extends string | null
+> = {
+  data: DataType | null
+  status: Status
+  error: null | string
+}
+
+export type FromAPI2<DataType> =
+  | APIState<DataType, REQUEST_STATE.DONE, null>
+  | APIState<DataType, REQUEST_STATE.DONE>
+
+export type FromAPI<DataType> =
+  | {
+      data: DataType
+      status: 'done'
+      error: null
+    }
+  | {
+      data: null
+      status: 'init'
+      error: null
+    }
+  | {
+      data: null
+      status: 'loading'
+      error: null
+    }
+  | {
+      data: null
+      status: 'error'
+      error: string
+    }
 
 /**
  * Function that allows TypeConverters to generate TypeMap's for non-Hasura Action SDL

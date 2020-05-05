@@ -38,5 +38,9 @@
   {
     "name": "typescript-express",
     "hasStarterKit": false
+  },
+  {
+    "name": "java-spring",
+    "hasStarterKit": false
   }
 ]

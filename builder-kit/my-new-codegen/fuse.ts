@@ -1,5 +1,5 @@
 import { fusebox, sparky } from 'fuse-box'
-import * as browserify from 'browserify'
+import browserify from 'browserify'
 import * as fs from 'fs'
 
 class Context {
@@ -23,16 +23,18 @@ const projectRoot = '../../'
 // Path to codegen template files
 const templatePath = './src/templates'
 // List of codegen templates to generate
-// prettier-ignore
+//prettier-ignore
 const codegenTemplates = [
   { file: 'goServeMux.codegen.ts', folder: 'go-serve-mux', starterKit: false, },
   { file: 'http4kBasic.codegen.ts', folder: 'kotlin-http4k', starterKit: false },
   { file: 'javascriptExpress.codegen.ts', folder: 'node-express-jsdoc', starterKit: false },
   { file: 'kotlinKtor.codegen.ts', folder: 'kotlin-ktor', starterKit: false },
+  { file: 'javaSpringBoot.codegen.ts', folder: 'java-spring', starterKit: false },
   { file: 'pythonFastAPI.codegen.ts', folder: 'python-fast-api', starterKit: true },
   { file: 'typescriptExpress.codegen.ts', folder: 'typescript-express',starterKit: false },
 ]
 
+// This just creates the task definitions for each codegen template
 for (const { file, folder } of codegenTemplates) {
   task(`prebuild:${file}`, () => {
     rm(`${projectRoot}/${folder}`)
@@ -78,6 +80,7 @@ for (const { file, folder } of codegenTemplates) {
   })
 }
 
+// This invokes the generated tasks for each of the templates
 task(`build`, async () => {
   for (const { file, folder } of codegenTemplates) {
     // Delete old version
