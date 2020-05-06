@@ -2,7 +2,7 @@ import { ScalarTypes, Fieldlike, ITypeMap } from '../types'
 import { indent, serialize, isScalar } from '../utils'
 import { buildBaseTypes } from '../schemaTools'
 import { html as template } from 'common-tags'
-import { EnumValueApi } from 'graphql-extra'
+import { EnumValueDefinitionApi } from 'graphql-extra'
 
 const scalarMap = {
   [ScalarTypes.ID]: `int`,
@@ -44,7 +44,10 @@ const typeMapToPythonTypes = (typeMap: ITypeMap) =>
     .map(([typeName, fields]) => pythonTypeDef(typeName, fields))
     .join('\n\n')
 
-const pythonEnumDef = (typeName: string, fields: EnumValueApi[]): string => {
+const pythonEnumDef = (
+  typeName: string,
+  fields: EnumValueDefinitionApi[]
+): string => {
   const fieldDefs = fields
     .map((field) => indent(`${field.getName()} = auto()`))
     .join('\n')
@@ -60,12 +63,21 @@ const typeMapToPythonEnums = (typeMap: ITypeMap) =>
     .map(([typeName, fields]) => pythonEnumDef(typeName, fields))
     .join('\n\n')
 
-const typeMapToPython = (typeMap: ITypeMap) =>
-  baseTypes +
-  '\n\n' +
-  typeMapToPythonTypes(typeMap) +
-  '\n\n' +
-  typeMapToPythonEnums(typeMap)
+const typeMapToPython = (typeMap: ITypeMap) => {
+  let typeDefs =
+    baseTypes +
+    '\n\n' +
+    typeMapToPythonTypes(typeMap) +
+    '\n\n' +
+    typeMapToPythonEnums(typeMap)
+
+  // Python can't handle type-aliases or standalone type-defs, so we need to replace them post-fact
+  Object.keys(typeMap.scalars).forEach((scalar) => {
+    typeDefs = typeDefs.replace(new RegExp(scalar, 'g'), 'Any')
+  })
+
+  return typeDefs
+}
 
 export const graphqlSchemaToPython = (schema: string) =>
   typeMapToPython(buildBaseTypes(schema))

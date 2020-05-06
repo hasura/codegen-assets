@@ -4,16 +4,44 @@ import { isScalar } from './utils'
 import {
   t,
   documentApi,
-  objectTypeApi,
   FieldDefinitionApi,
-  InputValueApi,
-  ScalarTypeApi,
   DocumentApi,
-  inputTypeApi,
-  enumValueApi,
-  enumTypeApi,
-  scalarTypeApi,
+  InputTypeApi,
+  ObjectTypeApi,
 } from 'graphql-extra'
+import { graphqlSchemaToTypescript } from './languages-functional/typescript'
+
+const nonDerivedSDL = `
+  type Mutation {
+    InsertUserAction(user_info: UserInfo!): UserOutput
+  }
+
+  enum SOME_ENUM {
+    TYPE_A
+    TYPE_B
+    TYPE_C
+  }
+
+  scalar Email
+
+  input UserInfo {
+    username: String!
+    password: String!
+    email: Email!
+    age: Int
+    birthDate: timestamptz!
+    enum_field: SOME_ENUM!
+    nullable_field: Float
+    nullable_list: [Int]
+  }
+
+  type UserOutput {
+    accessToken: String!
+    age: Int
+    email: Email!
+    birthDate: timestamptz
+  }
+`
 
 /**
  * Takes an argument from Action field in Schema
@@ -25,14 +53,14 @@ const makeActionArgType = (
 ): ObjectTypeDefinitionNode =>
   t.objectType({
     name: field.getName() + 'Args',
-    fields: field.getArguments().map((arg) => arg.node),
+    fields: field.getArguments().map((arg) => arg.toField().node),
   })
 
 /**
  * Maps through the Mutation fields to grab Action and creates types
  * in the schema document for each of them for codegen
  */
-export const addActionArgumentTypesToSchema = (document: DocumentApi) =>
+export const addActionArgumentTypesToSchema = (document: DocumentApi) => {
   document
     .getObjectType(getActionType(document))
     .getFields()
@@ -40,27 +68,28 @@ export const addActionArgumentTypesToSchema = (document: DocumentApi) =>
       const actionArgType = makeActionArgType(field)
       document.createObjectType(actionArgType)
     })
-
-export const createScalarTypeDefinitioNode = (
-  name: string,
-  description?: string
-) => {
-  const node: ScalarTypeDefinitionNode = {
-    kind: 'ScalarTypeDefinition',
-    name: {
-      kind: 'Name',
-      value: name,
-    },
-    description: description
-      ? {
-          kind: 'StringValue',
-          value: description,
-        }
-      : null,
-  }
-  return node
+  return document
 }
 
+const addMissingScalars = (
+  document: DocumentApi,
+  type: ObjectTypeApi | InputTypeApi
+) =>
+  type.getFields().forEach((f) => {
+    const fieldTypename = f.getTypename()
+    if (document.hasType(fieldTypename) || isScalar(fieldTypename)) return
+    document.createScalarType({ name: fieldTypename })
+  })
+
+const populatePostgresScalars = (document: DocumentApi) => {
+  document
+    .getAllObjectTypes()
+    .forEach((type) => addMissingScalars(document, type))
+  document
+    .getAllInputTypes()
+    .forEach((type) => addMissingScalars(document, type))
+  return document
+}
 /**
  * Takes a Document API object and builds a map of it's types and their fields
  */
@@ -70,53 +99,26 @@ function buildTypeMap(document: DocumentApi): ITypeMap {
     enums: {},
     scalars: {},
   }
-
-  // get a map of all types in the document
-  const allTypes: Record<string, any> = {}
-  document.typeMap.forEach((t) => {
-    allTypes[t.name.value] = true
-  })
-
   // consider a field type to be postgres scalar if it is not found in the doc
-  const populatePostgresScalars = (
-    fields: (InputValueApi | FieldDefinitionApi)[]
-  ) => {
-    fields.forEach((f) => {
-      const fieldTypename = f.getType().getTypename()
-      if (!allTypes[fieldTypename] && !isScalar(fieldTypename)) {
-        const newScalarApi = scalarTypeApi(
-          createScalarTypeDefinitioNode(fieldTypename)
-        )
-        res.scalars[fieldTypename] = newScalarApi
-        allTypes[fieldTypename] = true
-      }
-    })
-  }
+  populatePostgresScalars(document)
 
-  for (let [typeName, astNode] of document.typeMap) {
-    switch (astNode.kind) {
-      case 'InputObjectTypeDefinition': {
-        const fields = inputTypeApi(astNode).getFields()
-        populatePostgresScalars(fields)
-        res['types'][typeName] = fields
+  for (let type of document.getAllTypes()) {
+    const name = type.getName()
+    switch (true) {
+      case type.isInputType():
+        const inputFields = type.assertInputType().getFields()
+        res.types[name] = inputFields
         break
-      }
-      case 'ObjectTypeDefinition': {
-        const fields = objectTypeApi(astNode).getFields()
-        populatePostgresScalars(fields)
-        res['types'][typeName] = fields
+      case type.isObjectType():
+        const objectFields = type.assertObjectType().getFields()
+        res.types[name] = objectFields
         break
-      }
-      case 'EnumTypeDefinition': {
-        res['enums'][typeName] = enumTypeApi(astNode).node.values.map(
-          enumValueApi
-        )
+      case type.isEnumType():
+        res.enums[name] = type.assertEnumType().getValues()
         break
-      }
-      case 'ScalarTypeDefinition': {
-        res['scalars'][typeName] = scalarTypeApi(astNode)
+      case type.isScalarType():
+        res.scalars[name] = type.assertScalarType()
         break
-      }
     }
   }
 

@@ -1,5 +1,4 @@
-import { graphqlSchemaToKotlin } from '../languages-functional'
-import { kotlinHttp4kTemplate } from '../templates'
+import { rubyRailsTemplate } from './rubyRails'
 import { buildActionTypes } from '../schemaTools'
 import { DeriveParams } from '../types'
 
@@ -9,20 +8,13 @@ const templater = (
   derive: DeriveParams | null
 ) => {
   const actionParams = buildActionTypes(actionName, actionSdl)
-  const templateParams = { ...actionParams, derive }
-
-  const codegen = kotlinHttp4kTemplate({
-    ...templateParams,
-    typeDefs: graphqlSchemaToKotlin(actionSdl),
-  })
-
+  const codegen = rubyRailsTemplate({ ...actionParams, derive })
   const response = [
     {
-      name: actionName + 'KotlinHttp4k.kt',
+      name: actionName + '.rb',
       content: codegen,
     },
   ]
-
   return response
 }
 

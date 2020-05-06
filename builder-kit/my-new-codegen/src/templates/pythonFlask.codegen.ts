@@ -1,5 +1,5 @@
-import { graphqlSchemaToTypescript } from '../languages-functional'
-import { typescriptExpressTemplate } from '../templates'
+import { graphqlSchemaToPython } from '../languages-functional'
+import { pythonFlaskTemplate } from './pythonFlask'
 import { buildActionTypes } from '../schemaTools'
 import { DeriveParams } from '../types'
 
@@ -9,15 +9,15 @@ const templater = (
   derive: DeriveParams | null
 ) => {
   const actionParams = buildActionTypes(actionName, actionSdl)
-  const codegen = typescriptExpressTemplate({ ...actionParams, derive })
+  const codegen = pythonFlaskTemplate({ ...actionParams, derive })
   const response = [
     {
-      name: actionName + '.ts',
+      name: actionName + '.py',
       content: codegen,
     },
     {
-      name: actionName + 'types.ts',
-      content: graphqlSchemaToTypescript(actionSdl),
+      name: actionName + 'Types.py',
+      content: graphqlSchemaToPython(actionSdl),
     },
   ]
   return response

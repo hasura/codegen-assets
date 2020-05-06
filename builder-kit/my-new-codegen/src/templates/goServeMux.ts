@@ -1,36 +1,42 @@
 import { html as template } from 'common-tags'
 import { ITypeNode, CodegenTemplateParams } from '../types'
-import { getRootFieldName, capitalize } from '../utils';
+import { getRootFieldName, capitalize } from '../utils'
 
 const sampleValues = {
-  'Int': 1111,
-  'String': '"<sample value>"',
-  'Boolean': false,
-  'Float': 11.11,
-  'ID': 1111
-};
+  Int: 1111,
+  String: '"<sample value>"',
+  Boolean: false,
+  Float: 11.11,
+  ID: 1111,
+}
 
 export const goServeMuxTemplate = (params: CodegenTemplateParams) => {
-  const { actionArgs, actionName, returnType, typeDefs, typeMap, derive } = params
-  
+  const { actionName, returnType, typeDefs, typeMap, derive } = params
+
   const returnTypeDef = typeMap.types[returnType]
 
-  let delegationTypedefs = derive ? template`
+  let delegationTypedefs = derive?.operation
+    ? template`
 
     type GraphQLRequest struct {
       Query     string               \`json:"query"\`
       Variables ${actionName}Args \`json:"variables"\`
     }
     type GraphQLData struct {
-      ${getRootFieldName(derive.operation, true)} ${returnType} \`json:"${getRootFieldName(derive.operation)}"\`
+      ${getRootFieldName(
+        derive.operation,
+        true
+      )} ${returnType} \`json:"${getRootFieldName(derive.operation)}"\`
     }
     type GraphQLResponse struct {
       Data   GraphQLData    \`json:"data,omitempty"\`
       Errors []GraphQLError \`json:"errors,omitempty"\`
     }
-  ` : '';
+  `
+    : ''
 
-  let executeFunc = derive ? template`
+  let executeFunc = derive?.operation
+    ? template`
     func execute(variables ${actionName}Args) (response GraphQLResponse, err error) {
 
       // build the request body
@@ -63,9 +69,11 @@ export const goServeMuxTemplate = (params: CodegenTemplateParams) => {
       return
     }
 
-  ` : '';
+  `
+    : ''
 
-  let handlerFunc = derive ? template`
+  let handlerFunc = derive?.operation
+    ? template`
     // Auto-generated function that takes the Action parameters and must return it's response type
     func ${actionName}(args ${actionName}Args) (response ${returnType}, err error) {
 
@@ -87,13 +95,18 @@ export const goServeMuxTemplate = (params: CodegenTemplateParams) => {
 
     }
 
-  ` : template`
+  `
+    : template`
     // Auto-generated function that takes the Action parameters and must return it's response type
     func ${actionName}(args ${actionName}Args) (response ${returnType}, err error) {
       response =  ${returnType} {
-        ${returnTypeDef.map(f => {
-          return `${capitalize(f.getName())}: ${sampleValues[f.getType().getTypename()] || sampleValues["String"]}`
-        }).join(',\n')},
+        ${returnTypeDef
+          .map((f) => {
+            return `${capitalize(f.getName())}: ${
+              sampleValues[f.getType().getTypename()] || sampleValues['String']
+            }`
+          })
+          .join(',\n')},
       }
       return response, nil
     }
@@ -110,8 +123,6 @@ export const goServeMuxTemplate = (params: CodegenTemplateParams) => {
       "log"
       "net/http"
     )
-
-    ${typeDefs}
 
     type ActionPayload struct {
       SessionVariables map[string]interface{} \`json:"session_variables"\`

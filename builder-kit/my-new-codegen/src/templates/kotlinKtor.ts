@@ -2,7 +2,7 @@ import { html as template } from 'common-tags'
 import { CodegenTemplateParams } from '../types'
 
 export const kotlinKtorTemplate = (params: CodegenTemplateParams) => {
-  const { actionArgs, actionName, typeDefs } = params
+  const { actionName } = params
 
   return template`
     package org.hasura.my_action_handler
@@ -15,8 +15,6 @@ export const kotlinKtorTemplate = (params: CodegenTemplateParams) => {
     import com.fasterxml.jackson.databind.*
     import io.ktor.jackson.*
     import io.ktor.features.*
-
-    ${typeDefs}
 
     fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 

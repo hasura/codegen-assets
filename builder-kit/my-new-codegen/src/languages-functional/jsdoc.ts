@@ -2,7 +2,7 @@ import { ScalarTypes, Fieldlike, ITypeMap } from '../types'
 import { serialize, isScalar } from '../utils'
 import { buildBaseTypes } from '../schemaTools'
 import { html as template } from 'common-tags'
-import { EnumValueApi, ScalarTypeApi } from 'graphql-extra'
+import { EnumValueDefinitionApi, ScalarTypeApi } from 'graphql-extra'
 
 const scalarMap = {
   [ScalarTypes.ID]: `number`,
@@ -38,7 +38,7 @@ const typeMapToJSDocTypes = (typeMap: ITypeMap) =>
     .map(([typeName, fields]) => jsdocTypeDef(typeName, fields))
     .join('\n\n')
 
-const jsdocEnumDef = (typeName, fields: EnumValueApi[]) => {
+const jsdocEnumDef = (typeName, fields: EnumValueDefinitionApi[]) => {
   const fieldDefs = fields
     .map((field) => `* @property {string} ${field.getName()}`)
     .join('\n')
@@ -50,12 +50,12 @@ const jsdocEnumDef = (typeName, fields: EnumValueApi[]) => {
        */
     `
 }
-const jsdocScalarDef = (scalarType: ScalarTypeApi) => 
+const jsdocScalarDef = (scalarType: ScalarTypeApi) =>
   template`
       /** 
        * @typedef {string} ${scalarType.getName()}
        */
-    `;
+    `
 
 const typeMapToJSDocEnums = (typeMap: ITypeMap) =>
   Object.entries(typeMap.enums)
@@ -68,10 +68,10 @@ const typeMapToJSDocScalars = (typeMap: ITypeMap) =>
     .join('\n\n')
 
 const typeMapToJSDoc = (typeMap: ITypeMap) =>
-  typeMapToJSDocScalars(typeMap)
-  + '\n\n' +
-  typeMapToJSDocEnums(typeMap)
-  + '\n\n' +
+  typeMapToJSDocScalars(typeMap) +
+  '\n\n' +
+  typeMapToJSDocEnums(typeMap) +
+  '\n\n' +
   typeMapToJSDocTypes(typeMap)
 
 export const graphqlSchemaToJSDoc = (schema: string) =>

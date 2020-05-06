@@ -2,14 +2,9 @@ import { html as template } from 'common-tags'
 import { CodegenTemplateParams } from '../types'
 
 export const pythonFastAPITemplate = (params: CodegenTemplateParams) => {
-  const { actionArgs, actionName, returnType, typeDefs } = params
+  const { actionName, returnType } = params
 
   let baseTemplate: string = template`
-    class Config:
-      orm_mode = True
-
-    ${typeDefs}
-
     from fastapi import Body, FastAPI
 
     app = FastAPI()

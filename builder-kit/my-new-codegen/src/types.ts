@@ -1,10 +1,10 @@
 import {
   FieldDefinitionApi,
-  EnumValueApi,
   ScalarTypeApi,
   ArgumentApi,
-  InputValueApi,
-  ScalarTypeDefinitionNodeProps
+  InputValueDefinitionApi,
+  ScalarTypeDefinitionNodeProps,
+  EnumValueDefinitionApi,
 } from 'graphql-extra'
 
 /**
@@ -72,7 +72,7 @@ export interface IField {
  */
 export interface ActionParams {
   actionName: string
-  actionArgs: InputValueApi[]
+  actionArgs: InputValueDefinitionApi[]
   returnType: string
   typeMap: ITypeMap
 }
@@ -82,18 +82,12 @@ export interface CodegenTemplateParams extends ActionParams {
   derive: DeriveParams | null
 }
 
-export type Fieldlike = FieldDefinitionApi | InputValueApi
+export type Fieldlike = FieldDefinitionApi | InputValueDefinitionApi
 
 export interface ITypeMap {
-  types: {
-    [key: string]: Fieldlike[]
-  }
-  enums: {
-    [key: string]: EnumValueApi[]
-  },
-  scalars: {
-    [key: string]: ScalarTypeApi
-  }
+  types: Record<string, Fieldlike[]>
+  enums: Record<string, EnumValueDefinitionApi[]>
+  scalars: Record<string, ScalarTypeApi>
 }
 
 /**

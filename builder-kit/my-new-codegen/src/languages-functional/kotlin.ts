@@ -2,7 +2,7 @@ import { ScalarTypes, ITypeMap, Fieldlike } from '../types'
 import { isScalar, serialize } from '../utils'
 import { buildBaseTypes } from '../schemaTools'
 import { html as template } from 'common-tags'
-import { EnumValueApi } from 'graphql-extra'
+import { EnumValueDefinitionApi, ScalarTypeApi } from 'graphql-extra'
 
 const scalarMap = {
   [ScalarTypes.ID]: `Int`,
@@ -33,19 +33,30 @@ const kotlinTypeDef = (typeName: string, fields: Fieldlike[]): string => {
   return `data class ${typeName}(${fieldDefs})`
 }
 
+const kotlinScalarDef = (scalarType: ScalarTypeApi): string => template`
+    typealias ${scalarType.getName()} = Any
+  `
+
+const kotlinEnumDef = (
+  typeName: string,
+  fields: EnumValueDefinitionApi[]
+): string => {
+  const fieldDefs = fields.map((field) => field.getName()).join(', ')
+  return template`
+      enum class ${typeName} {
+        ${fieldDefs}
+      }`
+}
+
+const typeMapToKotlinScalars = (typeMap: ITypeMap) =>
+  Object.entries(typeMap.scalars)
+    .map(([_, scalarType]) => kotlinScalarDef(scalarType))
+    .join('\n\n')
+
 const typeMapToKotlinTypes = (typeMap: ITypeMap) =>
   Object.entries(typeMap.types)
     .map(([typeName, fields]) => kotlinTypeDef(typeName, fields))
     .join('\n\n')
-
-const kotlinEnumDef = (typeName: string, fields: EnumValueApi[]): string => {
-  const fieldDefs = fields.map((field) => field.getName()).join(', ')
-
-  return template`
-    enum class ${typeName} {
-      ${fieldDefs}
-    }`
-}
 
 const typeMapToKotlinEnums = (typeMap: ITypeMap) =>
   Object.entries(typeMap.enums)
@@ -53,7 +64,11 @@ const typeMapToKotlinEnums = (typeMap: ITypeMap) =>
     .join('\n\n')
 
 const typeMapToKotlin = (typeMap: ITypeMap) =>
-  typeMapToKotlinTypes(typeMap) + '\n\n' + typeMapToKotlinEnums(typeMap)
+  typeMapToKotlinScalars(typeMap) +
+  '\n\n' +
+  typeMapToKotlinTypes(typeMap) +
+  '\n\n' +
+  typeMapToKotlinEnums(typeMap)
 
 export const graphqlSchemaToKotlin = (schema: string) =>
   typeMapToKotlin(buildBaseTypes(schema))

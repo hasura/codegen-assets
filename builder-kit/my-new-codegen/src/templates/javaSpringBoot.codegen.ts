@@ -9,20 +9,17 @@ const templater = (
   derive: DeriveParams | null
 ) => {
   const actionParams = buildActionTypes(actionName, actionSdl)
-  const templateParams = { ...actionParams, derive }
-
-  const codegen = javaSpringBootTemplate({
-    ...templateParams,
-    typeDefs: graphqlSchemaTojava(actionSdl),
-  })
-
+  const codegen = javaSpringBootTemplate({ ...actionParams, derive })
   const response = [
     {
-      name: actionName + 'JavaSpringBoot.java',
+      name: actionName + '.java',
       content: codegen,
     },
+    {
+      name: actionName + 'Types.java',
+      content: graphqlSchemaTojava(actionSdl),
+    },
   ]
-
   return response
 }
 

@@ -9,20 +9,17 @@ const templater = (
   derive: DeriveParams | null
 ) => {
   const actionParams = buildActionTypes(actionName, actionSdl)
-  const templateParams = { ...actionParams, derive }
-
-  const codegen = kotlinKtorTemplate({
-    ...templateParams,
-    typeDefs: graphqlSchemaToKotlin(actionSdl),
-  })
-
+  const codegen = kotlinKtorTemplate({ ...actionParams, derive })
   const response = [
     {
-      name: actionName + 'KotlinKtor.kt',
+      name: actionName + '.kt',
       content: codegen,
     },
+    {
+      name: actionName + 'Types.kt',
+      content: graphqlSchemaToKotlin(actionSdl),
+    },
   ]
-
   return response
 }
 

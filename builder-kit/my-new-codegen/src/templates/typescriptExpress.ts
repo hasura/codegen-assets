@@ -3,27 +3,30 @@ import { CodegenTemplateParams } from '../types'
 import { NEWLINE } from '../utils'
 
 const sampleValues = {
-  'Int': 1111,
-  'String': '"<sample value>"',
-  'Boolean': false,
-  'Float': 11.11,
-  'ID': 1111
-};
+  Int: 1111,
+  String: '"<sample value>"',
+  Boolean: false,
+  Float: 11.11,
+  ID: 1111,
+}
 
 export const typescriptExpressTemplate = (params: CodegenTemplateParams) => {
-  const { actionArgs, actionName, returnType, typeDefs, derive, typeMap } = params
+  const { actionName, returnType, derive, typeMap } = params
 
-  const returnTypeDef = typeMap.types[returnType];
+  const returnTypeDef = typeMap.types[returnType]
 
   const baseTemplate = template`
     import { Request, Response } from 'express'
-    ${typeDefs}
 
     function ${actionName}Handler(args: ${actionName}Args): ${returnType} {
       return {
-        ${returnTypeDef.map(f => {
-          return `${f.getName()}: ${sampleValues[f.getType().getTypename()] || sampleValues["String"]}`
-        }).join(',\n')},
+        ${returnTypeDef
+          .map((f) => {
+            return `${f.getName()}: ${
+              sampleValues[f.getType().getTypename()] || sampleValues['String']
+            }`
+          })
+          .join(',\n')},
       }
     }
 
@@ -54,7 +57,6 @@ export const typescriptExpressTemplate = (params: CodegenTemplateParams) => {
     template`
     import { Request, Response } from 'express'
     import fetch from 'node-fetch'
-    ${typeDefs}
     const HASURA_OPERATION =` +
     hasuraOperation +
     template`

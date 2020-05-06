@@ -9,20 +9,17 @@ const templater = (
   derive: DeriveParams | null
 ) => {
   const actionParams = buildActionTypes(actionName, actionSdl)
-  const templateParams = { ...actionParams, derive }
-
-  const codegen = goServeMuxTemplate({
-    ...templateParams,
-    typeDefs: graphqlSchemaToGo(actionSdl),
-  })
-
+  const codegen = goServeMuxTemplate({ ...actionParams, derive })
   const response = [
     {
-      name: actionName + 'GoServeMux.go',
+      name: actionName + '.go',
       content: codegen,
     },
+    {
+      name: actionName + 'Types.go',
+      content: graphqlSchemaToGo(actionSdl),
+    },
   ]
-
   return response
 }
 

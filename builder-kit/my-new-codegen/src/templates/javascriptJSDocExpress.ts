@@ -2,28 +2,29 @@ import { html as template } from 'common-tags'
 import { CodegenTemplateParams } from '../types'
 
 const sampleValues = {
-  'Int': 1111,
-  'String': '"<sample value>"',
-  'Boolean': false,
-  'Float': 11.11,
-  'ID': 1111
-};
+  Int: 1111,
+  String: '"<sample value>"',
+  Boolean: false,
+  Float: 11.11,
+  ID: 1111,
+}
 
 // Use JSDoc Types for typeDefs args
 export const javascriptExpressTemplate = (params: CodegenTemplateParams) => {
+  const { actionName, returnType, derive, typeMap } = params
 
-  const { actionArgs, actionName, returnType, typeDefs, derive, typeMap } = params
-
-  const returnTypeDef = typeMap.types[returnType];
+  const returnTypeDef = typeMap.types[returnType]
 
   const baseTemplate = template`
-    ${typeDefs}
-
     function ${actionName}Handler(args) {
       return {
-        ${returnTypeDef.map(f => {
-          return `${f.getName()}: ${sampleValues[f.getType().getTypename()] || sampleValues["String"]}`
-        }).join(',\n')},
+        ${returnTypeDef
+          .map((f) => {
+            return `${f.getName()}: ${
+              sampleValues[f.getTypename()] || sampleValues['String']
+            }`
+          })
+          .join(',\n')},
       }
     }
 
@@ -53,7 +54,7 @@ export const javascriptExpressTemplate = (params: CodegenTemplateParams) => {
   const derivedTemplate =
     template`
     import fetch from 'node-fetch'
-    ${typeDefs}
+
     const HASURA_OPERATION =` +
     hasuraOperation +
     template`

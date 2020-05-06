@@ -2,7 +2,7 @@ import { ScalarTypes, Fieldlike, ITypeMap } from '../types'
 import { serialize, isScalar, capitalize } from '../utils'
 import { buildBaseTypes } from '../schemaTools'
 import { html as template } from 'common-tags'
-import { EnumValueApi, ScalarTypeApi } from 'graphql-extra'
+import { EnumValueDefinitionApi, ScalarTypeApi } from 'graphql-extra'
 
 const scalarMap = {
   [ScalarTypes.ID]: `int`,
@@ -44,11 +44,13 @@ const typeMapToGoTypes = (typeMap: ITypeMap) =>
 //   BankHoliday = "BankHoliday"
 //   Other = "Other"
 // )
-const goEnumDef = (typeName, fields: EnumValueApi[]) => {
+const goEnumDef = (typeName, fields: EnumValueDefinitionApi[]) => {
   const fieldDefs = fields
     .map((field, idx) =>
       idx == 0
-        ? `${capitalize(field.getName())} ${typeName} = "${capitalize(field.getName())}"`
+        ? `${capitalize(field.getName())} ${typeName} = "${capitalize(
+            field.getName()
+          )}"`
         : `${capitalize(field.getName())} = "${capitalize(field.getName())}"`
     )
     .join('\n')
@@ -70,17 +72,16 @@ const typeMapToGoEnums = (typeMap: ITypeMap) =>
     .map(([typeName, fields]) => goEnumDef(typeName, fields))
     .join('\n\n')
 
-
 const typeMapToGoScalars = (typeMap: ITypeMap) =>
   Object.entries(typeMap.scalars)
     .map(([_, scalarType]) => goScalarDef(scalarType))
     .join('\n\n')
 
 const typeMapToGo = (typeMap: ITypeMap) =>
-  typeMapToGoScalars(typeMap)
-  + '\n\n' +
-  typeMapToGoEnums(typeMap)
-  + '\n\n' +
+  typeMapToGoScalars(typeMap) +
+  '\n\n' +
+  typeMapToGoEnums(typeMap) +
+  '\n\n' +
   typeMapToGoTypes(typeMap)
 
 export const graphqlSchemaToGo = (schema: string) =>

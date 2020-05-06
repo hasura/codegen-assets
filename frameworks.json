@@ -20,11 +20,11 @@
     "hasStarterKit": false
   },
   {
-    "name": "kotlin-http4k",
+    "name": "http4k-basic",
     "hasStarterKit": false
   },
   {
-    "name": "node-express-jsdoc",
+    "name": "javascript-js-doc-express",
     "hasStarterKit": false
   },
   {
@@ -33,14 +33,22 @@
   },
   {
     "name": "python-fast-api",
-    "hasStarterKit": true
+    "hasStarterKit": false
+  },
+  {
+    "name": "python-flask",
+    "hasStarterKit": false
+  },
+  {
+    "name": "ruby-rails",
+    "hasStarterKit": false
   },
   {
     "name": "typescript-express",
     "hasStarterKit": false
   },
   {
-    "name": "java-spring",
+    "name": "java-spring-boot",
     "hasStarterKit": false
   }
 ]

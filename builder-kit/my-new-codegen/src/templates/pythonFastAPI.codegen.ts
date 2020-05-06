@@ -9,20 +9,17 @@ const templater = (
   derive: DeriveParams | null
 ) => {
   const actionParams = buildActionTypes(actionName, actionSdl)
-  const templateParams = { ...actionParams, derive }
-
-  const codegen = pythonFastAPITemplate({
-    ...templateParams,
-    typeDefs: graphqlSchemaToPython(actionSdl),
-  })
-
+  const codegen = pythonFastAPITemplate({ ...actionParams, derive })
   const response = [
     {
-      name: actionName + 'PythonFastAPI.py',
+      name: actionName + '.py',
       content: codegen,
     },
+    {
+      name: actionName + 'Types.py',
+      content: graphqlSchemaToPython(actionSdl),
+    },
   ]
-
   return response
 }
 

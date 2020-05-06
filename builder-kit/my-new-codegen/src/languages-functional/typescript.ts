@@ -2,7 +2,7 @@ import { ScalarTypes, Fieldlike, ITypeMap } from '../types'
 import { serialize, isScalar } from '../utils'
 import { buildBaseTypes } from '../schemaTools'
 import { html as template } from 'common-tags'
-import { EnumValueApi, ScalarTypeApi } from 'graphql-extra'
+import { EnumValueDefinitionApi, ScalarTypeApi } from 'graphql-extra'
 
 const scalarMap = {
   [ScalarTypes.ID]: 'number',
@@ -47,7 +47,10 @@ const typeMapToTSTypes = (typeMap: ITypeMap) =>
     .map(([typeName, fields]) => tsTypeDef(typeName, fields))
     .join('\n\n')
 
-const tsEnumDef = (typeName: string, fields: EnumValueApi[]): string => {
+const tsEnumDef = (
+  typeName: string,
+  fields: EnumValueDefinitionApi[]
+): string => {
   const fieldDefs = fields
     .map((field) => `${field.getName()} = '${field.getName()}'`)
     .join(',\n')
@@ -60,7 +63,7 @@ const tsEnumDef = (typeName: string, fields: EnumValueApi[]): string => {
 
 const tsScalarDef = (scalarType: ScalarTypeApi): string => {
   return template`
-    type ${scalarType.getName()} = string`;
+    type ${scalarType.getName()} = string`
 }
 
 const typeMapToTSEnums = (typeMap: ITypeMap) =>
@@ -74,12 +77,12 @@ const typeMapToTSScalars = (typeMap: ITypeMap) =>
     .join('\n\n')
 
 const typeMapToTypescript = (typeMap: ITypeMap) =>
-  baseTypes
-  + '\n\n' +
-  typeMapToTSScalars(typeMap)
-  + '\n\n' +
-  typeMapToTSEnums(typeMap)
-  + '\n\n' +
+  baseTypes +
+  '\n\n' +
+  typeMapToTSScalars(typeMap) +
+  '\n\n' +
+  typeMapToTSEnums(typeMap) +
+  '\n\n' +
   typeMapToTSTypes(typeMap)
 
 export const graphqlSchemaToTypescript = (schema: string) =>

@@ -2,7 +2,7 @@ import { ScalarTypes, ITypeMap, Fieldlike } from '../types'
 import { isScalar, serialize } from '../utils'
 import { buildBaseTypes } from '../schemaTools'
 import { html as template } from 'common-tags'
-import { EnumValueApi } from 'graphql-extra'
+import { EnumValueDefinitionApi } from 'graphql-extra'
 
 const scalarMap = {
   [ScalarTypes.ID]: `Integer`,
@@ -42,7 +42,7 @@ const typeMapTojavaTypes = (typeMap: ITypeMap) =>
     .map(([typeName, fields]) => javaTypeDef(typeName, fields))
     .join('\n\n')
 
-// const javaEnumDef = (typeName: string, fields: EnumValueApi[]): string => {
+// const javaEnumDef = (typeName: string, fields: EnumValueDefinitionApi[]): string => {
 //   const fieldDefs = fields.map((field) => field.getName()).join(', ')
 
 //   return template`
@@ -85,6 +85,3 @@ const schema = `
     accessToken: String!
   }
 `
-
-const res = graphqlSchemaTojava(schema)
-console.log(res)

@@ -1,5 +1,5 @@
-import { graphqlSchemaToTypescript } from '../languages-functional'
-import { typescriptExpressTemplate } from '../templates'
+import { graphqlSchemaToKotlin } from '../languages-functional'
+import { kotlinHttp4kTemplate } from '.'
 import { buildActionTypes } from '../schemaTools'
 import { DeriveParams } from '../types'
 
@@ -9,15 +9,15 @@ const templater = (
   derive: DeriveParams | null
 ) => {
   const actionParams = buildActionTypes(actionName, actionSdl)
-  const codegen = typescriptExpressTemplate({ ...actionParams, derive })
+  const codegen = kotlinHttp4kTemplate({ ...actionParams, derive })
   const response = [
     {
-      name: actionName + '.ts',
+      name: actionName + '.kt',
       content: codegen,
     },
     {
-      name: actionName + 'types.ts',
-      content: graphqlSchemaToTypescript(actionSdl),
+      name: actionName + 'Types.kt',
+      content: codegen,
     },
   ]
   return response

@@ -9,20 +9,17 @@ const templater = (
   derive: DeriveParams | null
 ) => {
   const actionParams = buildActionTypes(actionName, actionSdl)
-  const templateParams = { ...actionParams, derive }
-
-  const codegen = javascriptExpressTemplate({
-    ...templateParams,
-    typeDefs: graphqlSchemaToJSDoc(actionSdl),
-  })
-
+  const codegen = javascriptExpressTemplate({ ...actionParams, derive })
   const response = [
     {
-      name: actionName + 'JavascriptJSDocExpress.js',
+      name: actionName + '.js',
       content: codegen,
     },
+    {
+      name: actionName + 'Types.js',
+      content: graphqlSchemaToJSDoc(actionSdl),
+    },
   ]
-
   return response
 }
 

@@ -1,6 +1,6 @@
 export { typescriptExpressTemplate } from './typescriptExpress'
-export { javascriptExpressTemplate } from './javascriptExpress'
+export { javascriptExpressTemplate } from './javascriptJSDocExpress'
 export { goServeMuxTemplate } from './goServeMux'
-export { kotlinHttp4kTemplate } from './http4kBasic'
+export { kotlinHttp4kTemplate } from './kotlinHttp4k'
 export { kotlinKtorTemplate } from './kotlinKtor'
 export { pythonFastAPITemplate } from './pythonFastAPI'
