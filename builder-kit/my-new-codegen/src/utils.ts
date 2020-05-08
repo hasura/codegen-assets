@@ -66,3 +66,6 @@ export const serialize = (field: Fieldlike) => ({
   list: field.isListType(),
   type: field.getTypename(),
 })
+
+const _pipe = (f, g) => (...args) => g(f(...args))
+export const pipe = (...fns) => fns.reduce(_pipe)

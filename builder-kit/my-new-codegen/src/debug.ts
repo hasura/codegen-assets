@@ -92,6 +92,32 @@ const derivedSDL = `
   }
 `
 
+const realSdl = `
+  extend type Mutation {
+    Login (
+      not_email: String!
+      password: String!
+    ): JsonWebToken
+  }
+
+  extend type Query {
+    Signup (
+      email: String!
+      password: String!
+    ): CreateUserOutput
+  }
+
+  type CreateUserOutput {
+    id : Int!
+    email : String!
+    password : String!
+  }
+
+  type JsonWebToken {
+    token : String!
+  }
+`
+
 const templater = (
   actionName: string,
   actionSdl: string,

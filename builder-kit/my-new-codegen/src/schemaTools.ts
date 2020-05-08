@@ -1,6 +1,6 @@
-import { ObjectTypeDefinitionNode, ScalarTypeDefinitionNode } from 'graphql'
-import { ActionParams, ITypeMap, ScalarTypes } from './types'
-import { isScalar } from './utils'
+import { ObjectTypeDefinitionNode } from 'graphql'
+import { ActionParams, ITypeMap } from './types'
+import { pipe, isScalar } from './utils'
 import {
   t,
   documentApi,
@@ -9,46 +9,13 @@ import {
   InputTypeApi,
   ObjectTypeApi,
 } from 'graphql-extra'
-import { graphqlSchemaToTypescript } from './languages-functional/typescript'
-
-const nonDerivedSDL = `
-  type Mutation {
-    InsertUserAction(user_info: UserInfo!): UserOutput
-  }
-
-  enum SOME_ENUM {
-    TYPE_A
-    TYPE_B
-    TYPE_C
-  }
-
-  scalar Email
-
-  input UserInfo {
-    username: String!
-    password: String!
-    email: Email!
-    age: Int
-    birthDate: timestamptz!
-    enum_field: SOME_ENUM!
-    nullable_field: Float
-    nullable_list: [Int]
-  }
-
-  type UserOutput {
-    accessToken: String!
-    age: Int
-    email: Email!
-    birthDate: timestamptz
-  }
-`
 
 /**
  * Takes an argument from Action field in Schema
  * and converts it to an object type + adds to document
  * To codegen the Action's input parameter types later
  */
-const makeActionArgType = (
+const _makeActionArgType = (
   field: FieldDefinitionApi
 ): ObjectTypeDefinitionNode =>
   t.objectType({
@@ -60,18 +27,19 @@ const makeActionArgType = (
  * Maps through the Mutation fields to grab Action and creates types
  * in the schema document for each of them for codegen
  */
-export const addActionArgumentTypesToSchema = (document: DocumentApi) => {
+export function addArgumentTypesToSchema(document: DocumentApi) {
   document
-    .getObjectType(getActionType(document))
-    .getFields()
-    .forEach((field) => {
-      const actionArgType = makeActionArgType(field)
-      document.createObjectType(actionArgType)
+    .getAllObjectTypes()
+    .filter((type) => type.getName() == 'Mutation' || type.getName() == 'Query')
+    .forEach((type) => {
+      type.getFields().forEach((field) => {
+        document.createObjectType(_makeActionArgType(field))
+      })
     })
   return document
 }
 
-const addMissingScalars = (
+const _addMissingScalarsForType = (
   document: DocumentApi,
   type: ObjectTypeApi | InputTypeApi
 ) =>
@@ -81,26 +49,20 @@ const addMissingScalars = (
     document.createScalarType({ name: fieldTypename })
   })
 
-const populatePostgresScalars = (document: DocumentApi) => {
+const populateCustomScalars = (document: DocumentApi) => {
   document
     .getAllObjectTypes()
-    .forEach((type) => addMissingScalars(document, type))
+    .forEach((type) => _addMissingScalarsForType(document, type))
   document
     .getAllInputTypes()
-    .forEach((type) => addMissingScalars(document, type))
+    .forEach((type) => _addMissingScalarsForType(document, type))
   return document
 }
 /**
  * Takes a Document API object and builds a map of it's types and their fields
  */
-function buildTypeMap(document: DocumentApi): ITypeMap {
-  let res: ITypeMap = {
-    types: {},
-    enums: {},
-    scalars: {},
-  }
-  // consider a field type to be postgres scalar if it is not found in the doc
-  populatePostgresScalars(document)
+export function buildTypeMap(document: DocumentApi): ITypeMap {
+  let res: ITypeMap = { types: {}, enums: {}, scalars: {} }
 
   for (let type of document.getAllTypes()) {
     const name = type.getName()
@@ -125,18 +87,6 @@ function buildTypeMap(document: DocumentApi): ITypeMap {
   return res
 }
 
-type ActionType = 'Mutation' | 'Query'
-
-/**
- * Returns whether the Action is a Query or Mutation
- * Throws error if neither found
- */
-const getActionType = (doc: DocumentApi): ActionType => {
-  if (doc.hasType('Query')) return 'Query'
-  if (doc.hasType('Mutation')) return 'Mutation'
-  else throw new Error('Neither Mutation or Query found in Document SDL')
-}
-
 /**
  *
  * @param {string} actionName
@@ -147,15 +97,17 @@ export function buildActionTypes(
   actionName: string,
   sdl: string
 ): ActionParams {
-  // Remove the "extend" directive from mutation/query types so they work properly
-  // The console converts regular Mutation/Query types into extend type Mutation/Query
-  // which do not appear in the document Typemap and break the functionality.
-  const convertedSdl = removeExtendDirectives(sdl)
-  const document = documentApi().addSDL(convertedSdl)
-  addActionArgumentTypesToSchema(document)
+  const document = processSchema(sdl)
 
-  const actionType = getActionType(document)
-  const action = document.getObjectType(actionType).getField(actionName)
+  // The current Action is found by:
+  // - Iterating through all the Object Extension types
+  //   (since we use "extend type Query/Mutation")
+  // - Finding the one that has a field with current Action name
+  // - Then returning that field from the Operation (Mutation/Query) type
+  const action = document
+    .getAllObjectTypes()
+    .find((type) => type._fields.has(actionName))
+    .getField(actionName)
 
   let actionParams: ActionParams = {
     actionName: actionName,
@@ -168,25 +120,53 @@ export function buildActionTypes(
 }
 
 /**
- * Function that allows TypeConverters to generate TypeMap's for non-Hasura Action SDL
- * In TypeConverter constructor, it checks whether it should generate
+ * Converts "extend type Mutation" and "extend type Query" definitions
+ * into fields on root Mutation/Query types in the Document
  */
-export function buildBaseTypes(
-  sdl: string,
-  makeActionArgTypes: boolean = true
-) {
-  // Remove the "extend" directive from mutation/query types so they work properly
-  // The console converts regular Mutation/Query types into extend type Mutation/Query
-  // which do not appear in the document Typemap and break the functionality.
-  const convertedSdl = removeExtendDirectives(sdl)
-  const document = documentApi().addSDL(convertedSdl)
-  if (makeActionArgTypes) addActionArgumentTypesToSchema(document)
-  return buildTypeMap(document)
+function convertExtendedQueriesAndMutations(document: DocumentApi) {
+  document.upsertObjectType(t.queryType({}))
+  document.upsertObjectType(t.mutationType({}))
+
+  const queries = document.getObjectType('Query')
+  const mutations = document.getObjectType('Mutation')
+
+  document.getAllObjectExts().forEach((extendedType) => {
+    extendedType.getFields().forEach((field) => {
+      const operation = extendedType.getName()
+      if (operation == 'Query') queries.upsertField(field.node)
+      if (operation == 'Mutation') mutations.upsertField(field.node)
+    })
+  })
+
+  const queryFields = queries.getFields()
+  const mutationFields = mutations.getFields()
+
+  if (!queryFields.length) document.removeObjectType('Query')
+  if (!mutationFields.length) document.removeObjectType('Mutation')
+
+  return document
 }
 
 /**
- * We need this because "extend" removes the type from the Typemap
- * so we trim it and pretend it's just a regular Mutation/Query
+ * Function that allows TypeConverters to generate TypeMap's for non-Hasura Action SDL
+ * In TypeConverter constructor, it checks whether it should generate
  */
-export const removeExtendDirectives = (sdl: string) =>
-  sdl.replace(/extend/g, '')
+export const buildBaseTypes = (sdl: string) => buildTypeMap(processSchema(sdl))
+
+/**
+ * Converts a GraphQL Schema SDL string into a Document API
+ * while also processing it.
+ *
+ * Converts `extend type Query/Mutation` into regular types,
+ * creates types for each operation's inputs/arguments, and
+ * creates definitions for any custom scalars not in the schema.
+ */
+export function processSchema(sdl: string): DocumentApi {
+  const document = documentApi().addSDL(sdl)
+  const process = pipe(
+    convertExtendedQueriesAndMutations,
+    addArgumentTypesToSchema,
+    populateCustomScalars
+  )
+  return process(document)
+}
