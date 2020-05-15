@@ -34,7 +34,7 @@ const config: webpack.Configuration = {
   },
   output: {
     filename: '[name]/actions-codegen.js',
-    path: path.resolve(__dirname, '../../'),
+    path: path.resolve(__dirname, '../'),
   },
 }
 
