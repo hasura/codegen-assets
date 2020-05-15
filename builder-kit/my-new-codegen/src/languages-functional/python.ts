@@ -13,9 +13,20 @@ const scalarMap = {
 }
 
 const baseTypes = template`
-  from dataclasses import dataclass
+  from dataclasses import dataclass, asdict
   from typing import List, Optional
   from enum import Enum, auto
+  import json
+
+  @dataclass
+  class RequestMixin:
+      @classmethod
+      def from_request(cls, request):
+          values = request.get("input")
+          return cls(**values)
+
+      def to_json(self):
+          return json.dumps(asdict(self))
 `
 const fieldFormatter = (field: Fieldlike) => {
   let { name, required, list, type } = serialize(field)
@@ -34,7 +45,7 @@ const pythonTypeDef = (typeName: string, fields: Fieldlike[]): string => {
 
   return template`
       @dataclass
-      class ${typeName}:
+      class ${typeName}(RequestMixin):
       ${fieldDefs}
     `
 }

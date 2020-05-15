@@ -1,4 +1,4 @@
-import { graphqlSchemaToKotlin } from '../languages-functional'
+import { graphqlSchemaToKotlin } from '../languages-functional/kotlin'
 import { kotlinHttp4kTemplate } from '.'
 import { buildActionTypes } from '../schemaTools'
 import { DeriveParams } from '../types'
@@ -17,7 +17,7 @@ const templater = (
     },
     {
       name: actionName + 'Types.kt',
-      content: codegen,
+      content: graphqlSchemaToKotlin(actionSdl),
     },
   ]
   return response

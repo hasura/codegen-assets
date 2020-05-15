@@ -5,16 +5,17 @@ export const pythonFlaskTemplate = (params: CodegenTemplateParams) => {
   const { actionName, returnType } = params
 
   let baseTemplate: string = template`
+  from ${actionName}Types import ${actionName}Args, ${returnType}
   from flask import Flask, request, jsonify
 
   app = Flask(__name__)
 
-  @app.route('/sum', methods=['POST'])
-  def ${actionName}Handler() -> ${returnType}:
-    req_data = request.get_json()
-    input: ${actionName}Args = req_data['input']
-    print(input)
+  @app.route('/${actionName}', methods=['POST'])
+  def ${actionName}Handler():
+    args = ${actionName}Args.from_request(request.get_json())
+    print(args)
     # business logic here
+    return ${returnType}().to_json()
 
   if __name__ == '__main__':
     app.run(debug = True, host = '0.0.0.0')

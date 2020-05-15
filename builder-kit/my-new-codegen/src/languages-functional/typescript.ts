@@ -76,7 +76,7 @@ const typeMapToTSScalars = (typeMap: ITypeMap) =>
     .map(([_, scalarType]) => tsScalarDef(scalarType))
     .join('\n\n')
 
-const typeMapToTypescript = (typeMap: ITypeMap) =>
+export const typeMapToTypescript = (typeMap: ITypeMap) =>
   baseTypes +
   '\n\n' +
   typeMapToTSScalars(typeMap) +

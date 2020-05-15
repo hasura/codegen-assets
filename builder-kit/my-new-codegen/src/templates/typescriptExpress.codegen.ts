@@ -16,7 +16,7 @@ const templater = (
       content: codegen,
     },
     {
-      name: actionName + 'types.ts',
+      name: actionName + 'Types.ts',
       content: graphqlSchemaToTypescript(actionSdl),
     },
   ]

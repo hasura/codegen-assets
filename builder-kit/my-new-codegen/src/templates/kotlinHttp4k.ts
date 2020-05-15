@@ -31,9 +31,7 @@ export const kotlinHttp4kTemplate = (params: CodegenTemplateParams) => {
      import org.http4k.routing.routes
      import org.http4k.server.Jetty
      import org.http4k.server.asServer
- 
-     ${typeDefs}
- 
+  
      fun main(args: Array<String>) {
          val port = if (args.isNotEmpty()) args[0] else "5000"
          val baseUrl = if (args.size > 1) args[1] else "http://localhost:$port"
