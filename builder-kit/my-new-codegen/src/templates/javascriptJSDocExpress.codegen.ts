@@ -1,5 +1,5 @@
-import { graphqlSchemaToJSDoc } from '../languages-functional'
-import { javascriptExpressTemplate } from '../templates'
+import { graphqlSchemaToJSDoc } from '../languages-functional/jsdoc'
+import { javascriptExpressTemplate } from './javascriptJSDocExpress'
 import { buildActionTypes } from '../schemaTools'
 import { DeriveParams } from '../types'
 

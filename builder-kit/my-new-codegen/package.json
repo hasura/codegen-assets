@@ -5,9 +5,15 @@
   "ts:main": "src/index.ts",
   "typings": "src/index.ts",
   "license": "MIT",
+  "@comment build": [
+    "Webpack needs commonjs module set in tsconfig, but commonjs produces (slightly) larger bundles than ESNEXT.",
+    "So instead of maintaing one tsconfig for webpack, and one for the actual project code,",
+    "you can override ts-node configuration in-command to temporarily set module just to load webpack config."
+  ],
   "scripts": {
-    "build": "yarn webpack --config webpack.config.ts",
-    "debug": "cd src && nodemon debug.ts"
+    "build": "TS_NODE_COMPILER_OPTIONS='{\"module\":\"commonjs\"}' yarn webpack --config webpack.config.ts",
+    "debug": "cd src && nodemon debug.ts",
+    "serve-assets": "cd ../../ && npx sirv-cli --cors"
   },
   "dependencies": {
     "common-tags": "^1.8.0",

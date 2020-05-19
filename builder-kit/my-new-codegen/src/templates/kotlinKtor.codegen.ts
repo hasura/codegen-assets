@@ -1,5 +1,5 @@
-import { graphqlSchemaToKotlin } from '../languages-functional'
-import { kotlinKtorTemplate } from '../templates'
+import { graphqlSchemaToKotlin } from '../languages-functional/kotlin'
+import { kotlinKtorTemplate } from './kotlinKtor'
 import { buildActionTypes } from '../schemaTools'
 import { DeriveParams } from '../types'
 

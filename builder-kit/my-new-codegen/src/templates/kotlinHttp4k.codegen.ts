@@ -1,5 +1,5 @@
 import { graphqlSchemaToKotlin } from '../languages-functional/kotlin'
-import { kotlinHttp4kTemplate } from '.'
+import { kotlinHttp4kTemplate } from './kotlinHttp4k'
 import { buildActionTypes } from '../schemaTools'
 import { DeriveParams } from '../types'
 

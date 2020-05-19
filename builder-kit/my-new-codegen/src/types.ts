@@ -1,9 +1,7 @@
 import {
   FieldDefinitionApi,
   ScalarTypeApi,
-  ArgumentApi,
   InputValueDefinitionApi,
-  ScalarTypeDefinitionNodeProps,
   EnumValueDefinitionApi,
 } from 'graphql-extra'
 
@@ -74,6 +72,7 @@ export interface ActionParams {
   actionName: string
   actionArgs: InputValueDefinitionApi[]
   returnType: string
+  returnTypeField: FieldDefinitionApi
   typeMap: ITypeMap
 }
 

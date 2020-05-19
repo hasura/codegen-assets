@@ -12,7 +12,7 @@ const scalarMap = {
   [ScalarTypes.BOOLEAN]: `Boolean`,
 }
 
-const fieldFormatter = (field: Fieldlike) => {
+export const fieldFormatter = (field: Fieldlike) => {
   let { name, required, list, type } = serialize(field)
   let T = isScalar(type) ? scalarMap[type] : type
   // String -> String?

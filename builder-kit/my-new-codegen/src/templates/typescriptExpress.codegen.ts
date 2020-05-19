@@ -1,5 +1,5 @@
-import { graphqlSchemaToTypescript } from '../languages-functional'
-import { typescriptExpressTemplate } from '../templates'
+import { graphqlSchemaToTypescript } from '../languages-functional/typescript'
+import { typescriptExpressTemplate } from '../templates/typescriptExpress'
 import { buildActionTypes } from '../schemaTools'
 import { DeriveParams } from '../types'
 

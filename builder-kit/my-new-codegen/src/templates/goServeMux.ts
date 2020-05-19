@@ -1,6 +1,7 @@
 import { html as template } from 'common-tags'
-import { ITypeNode, CodegenTemplateParams } from '../types'
+import { CodegenTemplateParams } from '../types'
 import { getRootFieldName, capitalize } from '../utils'
+import { fieldFormatter } from '../languages-functional/go'
 
 const sampleValues = {
   Int: 1111,
@@ -11,8 +12,9 @@ const sampleValues = {
 }
 
 export const goServeMuxTemplate = (params: CodegenTemplateParams) => {
-  const { actionName, returnType, typeDefs, typeMap, derive } = params
+  const { actionName, returnType, returnTypeField, typeMap, derive } = params
 
+  const returnTypeObj = fieldFormatter(returnTypeField)
   const returnTypeDef = typeMap.types[returnType]
 
   let delegationTypedefs = derive?.operation
@@ -75,7 +77,9 @@ export const goServeMuxTemplate = (params: CodegenTemplateParams) => {
   let handlerFunc = derive?.operation
     ? template`
     // Auto-generated function that takes the Action parameters and must return it's response type
-    func ${actionName}(args ${actionName}Args) (response ${returnType}, err error) {
+    func ${actionName}(args ${actionName}Args) (response ${
+        returnTypeObj.type
+      }, err error) {
 
       hasuraResponse, err := execute(args)
 
@@ -98,8 +102,10 @@ export const goServeMuxTemplate = (params: CodegenTemplateParams) => {
   `
     : template`
     // Auto-generated function that takes the Action parameters and must return it's response type
-    func ${actionName}(args ${actionName}Args) (response ${returnType}, err error) {
-      response =  ${returnType} {
+    func ${actionName}(args ${actionName}Args) (response ${
+        returnTypeObj.type
+      }, err error) {
+      response =  ${returnTypeObj.type} {
         ${returnTypeDef
           .map((f) => {
             return `${capitalize(f.getName())}: ${

@@ -1,4 +1,4 @@
-import { graphqlSchemaTojava } from '../languages-functional'
+import { graphqlSchemaTojava } from '../languages-functional/java'
 import { buildActionTypes } from '../schemaTools'
 import { DeriveParams } from '../types'
 import { javaSpringBootTemplate } from './javaSpringBoot'

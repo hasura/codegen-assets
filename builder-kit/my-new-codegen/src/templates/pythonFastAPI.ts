@@ -1,8 +1,10 @@
 import { html as template } from 'common-tags'
 import { CodegenTemplateParams } from '../types'
+import { fieldFormatter } from '../languages-functional/python'
 
 export const pythonFastAPITemplate = (params: CodegenTemplateParams) => {
-  const { actionName, returnType } = params
+  const { actionName, returnTypeField } = params
+  const returnTypeObj = fieldFormatter(returnTypeField)
 
   let baseTemplate: string = template`
     from fastapi import Body, FastAPI
@@ -10,7 +12,7 @@ export const pythonFastAPITemplate = (params: CodegenTemplateParams) => {
     app = FastAPI()
 
     @app.post("/items/", response_model=${actionName}Args)
-    async def ${actionName}Handler(item: ${actionName}Args = Body(...)) -> ${returnType}:
+    async def ${actionName}Handler(item: ${actionName}Args = Body(...)) -> ${returnTypeObj.type}:
         # business logic here
   `
   // Need to replace "from dataclasses import dataclass" with "from "pydantic.dataclasses"

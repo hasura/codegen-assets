@@ -3,9 +3,9 @@ import { ActionParams, ITypeMap } from './types'
 import { pipe, isScalar } from './utils'
 import {
   t,
+  DocumentApi,
   documentApi,
   FieldDefinitionApi,
-  DocumentApi,
   InputTypeApi,
   ObjectTypeApi,
 } from 'graphql-extra'
@@ -112,6 +112,7 @@ export function buildActionTypes(
   let actionParams: ActionParams = {
     actionName: actionName,
     returnType: action.getTypename(),
+    returnTypeField: action,
     actionArgs: action.getArguments(),
     typeMap: buildTypeMap(document),
   }

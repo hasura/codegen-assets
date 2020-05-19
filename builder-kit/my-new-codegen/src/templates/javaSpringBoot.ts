@@ -1,8 +1,10 @@
 import { html as template } from 'common-tags'
 import { CodegenTemplateParams } from '../types'
+import { fieldFormatter } from '../languages-functional/java'
 
 export const javaSpringBootTemplate = (params: CodegenTemplateParams) => {
-  const { actionArgs, actionName, typeDefs, returnType } = params
+  const { actionName, returnTypeField } = params
+  const returnTypeObj = fieldFormatter(returnTypeField)
 
   return template`
     package my_action;
@@ -17,7 +19,7 @@ export const javaSpringBootTemplate = (params: CodegenTemplateParams) => {
     @RestController
     class ActionController {
     @PostMapping("/${actionName}")
-    ${returnType} handler(@RequestBody ${actionName}Args actionArgs) {
+    ${returnTypeObj.type} handler(@RequestBody ${actionName}Args actionArgs) {
         // logic
     }
 }

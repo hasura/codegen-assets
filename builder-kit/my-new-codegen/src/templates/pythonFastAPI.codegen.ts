@@ -1,5 +1,5 @@
-import { graphqlSchemaToPython } from '../languages-functional'
-import { pythonFastAPITemplate } from '../templates'
+import { graphqlSchemaToPython } from '../languages-functional/python'
+import { pythonFastAPITemplate } from './pythonFastAPI'
 import { buildActionTypes } from '../schemaTools'
 import { DeriveParams } from '../types'
 

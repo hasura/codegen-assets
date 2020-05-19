@@ -12,7 +12,7 @@ const scalarMap = {
   [ScalarTypes.BOOLEAN]: `Boolean`,
 }
 
-const fieldFormatter = (field: Fieldlike) => {
+export const fieldFormatter = (field: Fieldlike) => {
   let { name, required, list, type } = serialize(field)
   let T = isScalar(type) ? scalarMap[type] : type
   // String? -> List<String?>
@@ -61,27 +61,3 @@ const typeMapTojavaTypes = (typeMap: ITypeMap) =>
 
 export const graphqlSchemaTojava = (schema: string) =>
   typeMapTojavaTypes(buildBaseTypes(schema))
-
-const schema = `
-  type Mutation {
-    InsertUserAction(user_info: UserInfo!): TokenOutput
-  }
-
-  enum SOME_ENUM {
-    TYPE_A
-    TYPE_B
-    TYPE_C
-  }
-
-  input UserInfo {
-    username: String!
-    password: String!
-    enum_field: SOME_ENUM!
-    nullable_field: Float
-    nullable_list: [Int]
-  }
-
-  type TokenOutput {
-    accessToken: String!
-  }
-`

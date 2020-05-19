@@ -28,7 +28,7 @@ const baseTypes = template`
       def to_json(self):
           return json.dumps(asdict(self))
 `
-const fieldFormatter = (field: Fieldlike) => {
+export const fieldFormatter = (field: Fieldlike) => {
   let { name, required, list, type } = serialize(field)
   let T = isScalar(type) ? scalarMap[type] : type
   // str -> List[str]

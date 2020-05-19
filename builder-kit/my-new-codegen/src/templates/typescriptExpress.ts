@@ -1,6 +1,6 @@
 import { html as template } from 'common-tags'
 import { CodegenTemplateParams } from '../types'
-import { NEWLINE } from '../utils'
+import { fieldFormatter } from '../languages-functional/typescript'
 
 const sampleValues = {
   Int: 1111,
@@ -11,14 +11,17 @@ const sampleValues = {
 }
 
 export const typescriptExpressTemplate = (params: CodegenTemplateParams) => {
-  const { actionName, returnType, derive, typeMap } = params
+  const { actionName, returnType, derive, typeMap, returnTypeField } = params
 
+  const returnTypeObj = fieldFormatter(returnTypeField)
   const returnTypeDef = typeMap.types[returnType]
 
   const baseTemplate = template`
     import { Request, Response } from 'express'
 
-    function ${actionName}Handler(args: ${actionName}Args): ${returnType} {
+    function ${actionName}Handler(args: ${actionName}Args): ${
+    returnTypeObj.type
+  } {
       return {
         ${returnTypeDef
           .map((f) => {

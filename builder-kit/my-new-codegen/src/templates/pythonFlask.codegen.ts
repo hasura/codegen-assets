@@ -1,4 +1,4 @@
-import { graphqlSchemaToPython } from '../languages-functional'
+import { graphqlSchemaToPython } from '../languages-functional/python'
 import { pythonFlaskTemplate } from './pythonFlask'
 import { buildActionTypes } from '../schemaTools'
 import { DeriveParams } from '../types'
