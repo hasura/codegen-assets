@@ -14,7 +14,7 @@ const scalarMap = {
 
 const baseTypes = template`
   from dataclasses import dataclass, asdict
-  from typing import List, Optional
+  from typing import List, Optional, Any
   from enum import Enum, auto
   import json
 

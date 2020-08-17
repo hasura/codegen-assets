@@ -124,8 +124,11 @@ export function buildActionTypes(
  * into fields on root Mutation/Query types in the Document
  */
 function convertExtendedQueriesAndMutations(document: DocumentApi) {
-  document.upsertObjectType(t.queryType({}))
-  document.upsertObjectType(t.mutationType({}))
+  if (!document._objectTypes.findOne('Query'))
+    document.upsertObjectType(t.queryType({}))
+
+  if (!document._objectTypes.findOne('Mutation'))
+    document.upsertObjectType(t.mutationType({}))
 
   const queries = document.getObjectType('Query')
   const mutations = document.getObjectType('Mutation')

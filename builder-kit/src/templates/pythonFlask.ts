@@ -2,7 +2,13 @@ import { html as template } from 'common-tags'
 import { CodegenTemplateParams } from '../types'
 
 export const pythonFlaskTemplate = (params: CodegenTemplateParams) => {
-  const { actionName, returnType } = params
+  const { actionName, returnType, typeMap } = params
+
+  // Makes empty arguments for Python return type object, for user to fill in with proper values through business logic
+  const returnTypeFields = typeMap.types[returnType]
+  const returnTypePythonArgs = returnTypeFields
+    .map((it) => it.getName() + '=')
+    .join(', ')
 
   let baseTemplate: string = template`
   from ${actionName}Types import ${actionName}Args, ${returnType}
@@ -15,7 +21,7 @@ export const pythonFlaskTemplate = (params: CodegenTemplateParams) => {
     args = ${actionName}Args.from_request(request.get_json())
     print(args)
     # business logic here
-    return ${returnType}().to_json()
+    return ${returnType}(${returnTypePythonArgs}).to_json()
 
   if __name__ == '__main__':
     app.run(debug = True, host = '0.0.0.0')
