@@ -23,7 +23,7 @@ app.post('/greet', (req, res) => {
 });
 ```
 
-### Throwing erros
+### Throwing errors
 
 You can throw an error object or a list of error objects from your handler. The response must be 4xx and the error object must have a string field called `message`.
 
