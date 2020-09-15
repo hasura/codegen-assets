@@ -341,13 +341,13 @@ You can contribute to codegen in one or more of the following ways:
 
 ### Creating a type convertor for a new language
 
-We have type convertors for a bunch of languages [here](https://github.com/hasura/codegen-assets/tree/master/source/src/languages-functional). You can add a type convertor for a new language that can be levaraged in future to add codegen for different framworks/runtimes for that language.
+We have type convertors for a bunch of languages [here](https://github.com/hasura/codegen-assets/tree/master/builder-kit/src/languages-functional). You can add a type convertor for a new language that can be levaraged in future to add codegen for different framworks/runtimes for that language.
 
 TODO (elaborate instructions)
 
 ### Creating a templates for a framework
 
-We have a templaters for different frameworks and runtimes [here](https://github.com/hasura/codegen-assets/tree/master/source/src/templates).
+We have a templaters for different frameworks and runtimes [here](https://github.com/hasura/codegen-assets/tree/master/builder-kit/src/templates).
 
 TODO (elaborate instructions)
 
