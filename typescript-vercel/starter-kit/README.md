@@ -1,8 +1,8 @@
-# typescript-zeit
+# typescript-vercel
 
-This is a starter kit for `typescript` with `zeit`. To get started:
+This is a starter kit for `typescript` with `vercel` (zeit). To get started:
 
-1. Firstly, [download the starter-kit](https://github.com/hasura/codegen-assets/raw/master/typescript-zeit/typescript-zeit.zip) and `cd` into it.
+1. Firstly, [download the starter-kit](https://github.com/hasura/codegen-assets/raw/master/typescript-vercel/typescript-vercel.zip) and `cd` into it.
 
 2. You first need to install the `now-cli`.
 

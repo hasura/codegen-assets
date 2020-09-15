@@ -4,11 +4,11 @@
     "hasStarterKit": true
   },
   {
-    "name": "nodejs-zeit",
+    "name": "nodejs-vercel",
     "hasStarterKit": true
   },
   {
-    "name": "typescript-zeit",
+    "name": "typescript-vercel",
     "hasStarterKit": true
   },
   {
