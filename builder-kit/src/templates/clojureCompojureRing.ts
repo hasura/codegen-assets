@@ -23,7 +23,11 @@ export const clojureCompojureRingTemplate = (params: CodegenTemplateParams) => {
                 [ring.util.response :refer [response]]
                 [clojure.string :as str]))
 
-    (defn ${kebabCase(actionName)}-handler [req]
+    ;; defining the name of the handler being used in the sample
+    (def action-handler
+      (symbol "${kebabCase(actionName)}-handler"))
+
+    (defn action-handler [req]
       ;; args will contain all of the input arguments passed to the action
       (let [args (:input (:body req))]
 
@@ -33,7 +37,7 @@ export const clojureCompojureRingTemplate = (params: CodegenTemplateParams) => {
 
     ;; Defining the allowed routes for the API
     (defroutes app-routes
-      (POST "/" [] (wrap-json-response ${kebabCase(actionName)}-handler))
+      (POST "/" [] (wrap-json-response action-handler))
       (route/not-found "Route not found!"))
 
     ;; Defining the app
