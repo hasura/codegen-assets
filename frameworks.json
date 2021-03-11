@@ -50,5 +50,9 @@
   {
     "name": "java-spring-boot",
     "hasStarterKit": false
+  },
+  {
+    "name": "clojure-compojure-ring",
+    "hasStarterKit": false
   }
 ]
