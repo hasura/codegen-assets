@@ -10,9 +10,10 @@
     )
   `})(e,t)).join("\n\n"),l=e=>Object.entries(e.scalars).map(([e,t])=>(e=>`type ${i.capitalize(e.getName())} string`)(t)).join("\n\n");t.graphqlSchemaToGo=e=>{return t=o.buildBaseTypes(e),l(t)+"\n\n"+p(t)+"\n\n"+c(t);var t}},4914:(e,t,n)=>{function r(e){for(var n in e)t.hasOwnProperty(n)||(t[n]=e[n])}Object.defineProperty(t,"__esModule",{value:!0}),r(n(6529)),r(n(8908)),r(n(2877)),r(n(6762)),r(n(6741)),r(n(6299))},6299:(e,t,n)=>{Object.defineProperty(t,"__esModule",{value:!0});const r=n(9699),i=n(8593),o=n(4540),a=n(7561),s={[r.ScalarTypes.ID]:"Integer",[r.ScalarTypes.INT]:"Integer",[r.ScalarTypes.FLOAT]:"Float",[r.ScalarTypes.STRING]:"String",[r.ScalarTypes.BOOLEAN]:"Boolean"},u=e=>{let{name:t,required:n,list:r,type:o}=i.serialize(e),a=i.isScalar(o)?s[o]:o;return r&&(a=`Iterable<${a}>`),{name:t,type:a}},c=e=>Object.entries(e.types).map(([e,t])=>((e,t)=>{const n=t.map(u).map(({name:e,type:t})=>a.html`
       private ${t} _${e};
-      public ${t} get${e}() { return this._${e}; }
+      public void set${i.capitalize(e)}(${t} ${e}) { this._${e} = ${e}; }
+      public ${t} get${i.capitalize(e)}() { return this._${e}; }
     `).join("\n\n");return a.html`
-    public class ${e} {
+    class ${i.capitalize(e)} {
       ${n}
     }`})(e,t)).join("\n\n");t.graphqlSchemaTojava=e=>c(o.buildBaseTypes(e))},8908:(e,t,n)=>{Object.defineProperty(t,"__esModule",{value:!0});const r=n(9699),i=n(8593),o=n(4540),a=n(7561),s={[r.ScalarTypes.ID]:"number",[r.ScalarTypes.INT]:"number",[r.ScalarTypes.FLOAT]:"number",[r.ScalarTypes.STRING]:"string",[r.ScalarTypes.BOOLEAN]:"boolean"},u=e=>{let{name:t,required:n,list:r,type:o}=i.serialize(e),a=i.isScalar(o)?s[o]:o;return n||(a=`[${a}]`),r&&(a=`Array<${a}>`),{name:t,type:a}},c=e=>Object.entries(e.types).map(([e,t])=>((e,t)=>{const n=t.map(u).map(({name:e,type:t})=>`* @property {${t}} ${e}`).join("\n");return a.html`
      /** 

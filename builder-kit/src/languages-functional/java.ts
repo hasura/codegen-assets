@@ -1,5 +1,5 @@
 import { ScalarTypes, ITypeMap, Fieldlike } from '../types'
-import { isScalar, serialize } from '../utils'
+import {capitalize, isScalar, serialize} from '../utils'
 import { buildBaseTypes } from '../schemaTools'
 import { html as template } from 'common-tags'
 import { EnumValueDefinitionApi } from 'graphql-extra'
@@ -20,19 +20,21 @@ const fieldFormatter = (field: Fieldlike) => {
   return { name, type: T }
 }
 
+
 const javaTypeDef = (typeName: string, fields: Fieldlike[]): string => {
   const fieldDefs = fields
     .map(fieldFormatter)
     .map(
       ({ name, type }) => template`
       private ${type} _${name};
-      public ${type} get${name}() { return this._${name}; }
+      public void set${capitalize(name)}(${type} ${name}) { this._${name} = ${name}; }
+      public ${type} get${capitalize(name)}() { return this._${name}; }
     `
     )
     .join('\n\n')
 
   return template`
-    public class ${typeName} {
+    class ${capitalize(typeName)} {
       ${fieldDefs}
     }`
 }
@@ -61,27 +63,3 @@ const typeMapTojavaTypes = (typeMap: ITypeMap) =>
 
 export const graphqlSchemaTojava = (schema: string) =>
   typeMapTojavaTypes(buildBaseTypes(schema))
-
-const schema = `
-  type Mutation {
-    InsertUserAction(user_info: UserInfo!): TokenOutput
-  }
-
-  enum SOME_ENUM {
-    TYPE_A
-    TYPE_B
-    TYPE_C
-  }
-
-  input UserInfo {
-    username: String!
-    password: String!
-    enum_field: SOME_ENUM!
-    nullable_field: Float
-    nullable_list: [Int]
-  }
-
-  type TokenOutput {
-    accessToken: String!
-  }
-`
