@@ -13,7 +13,7 @@ export const pythonFlaskTemplate = (params: CodegenTemplateParams) => {
   from ${actionName}Types import ${actionName}Args, ${returnType}
 
 
-  ActionInput = TypeVar("ActionInput", bound=BaseModel)
+  ActionInput = TypeVar("ActionInput", bound=BaseModel | None)
 
 
   class ActionName(BaseModel):

@@ -354,7 +354,7 @@
     from ${t}Types import ${t}Args, ${n}
 
 
-    ActionInput = TypeVar("ActionInput", bound=BaseModel)
+    ActionInput = TypeVar("ActionInput", bound=BaseModel | None)
 
 
     class ActionName(BaseModel):
