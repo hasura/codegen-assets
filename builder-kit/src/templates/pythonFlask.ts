@@ -5,20 +5,36 @@ export const pythonFlaskTemplate = (params: CodegenTemplateParams) => {
   const { actionName, returnType } = params
 
   let baseTemplate: string = template`
+  from flask import Flask
+  from flask_pydantic import validate
+  from typing import Generic, TypeVar
+  from pydantic import BaseModel
+  from pydantic.generics import GenericModel
   from ${actionName}Types import ${actionName}Args, ${returnType}
-  from flask import Flask, request, jsonify
+
+
+  ActionInput = TypeVar("ActionInput", bound=BaseModel | None)
+
+
+  class ActionName(BaseModel):
+    name: str
+
+
+  class ActionPayload(GenericModel, Generic[ActionInput]):
+    action: ActionName
+    input: ActionInput
+    request_query: str
+    session_variables: dict[str, str]
+
 
   app = Flask(__name__)
 
-  @app.route('/${actionName}', methods=['POST'])
-  def ${actionName}Handler():
-    args = ${actionName}Args.from_request(request.get_json())
-    print(args)
-    # business logic here
-    return ${returnType}().to_json()
 
-  if __name__ == '__main__':
-    app.run(debug = True, host = '0.0.0.0')
+  @app.route('/${actionName}', methods=['POST'])
+  @validate()
+  def ${actionName}Handler(action: ActionPayload[${actionName}Args]) -> ${returnType}:
+    # business logic here
+    return ${returnType}()
   `
 
   return baseTemplate
