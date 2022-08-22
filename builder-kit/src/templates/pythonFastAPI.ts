@@ -5,21 +5,35 @@ export const pythonFastAPITemplate = (params: CodegenTemplateParams) => {
   const { actionName, returnType } = params
 
   let baseTemplate: string = template`
-    from fastapi import Body, FastAPI
+    from fastapi import FastAPI
+    from typing import Generic, TypeVar
+    from pydantic import BaseModel
+    from pydantic.generics import GenericModel
+    from ${actionName}Types import ${actionName}Args, ${returnType}
+
+
+    ActionInput = TypeVar("ActionInput", bound=BaseModel)
+
+
+    class ActionName(BaseModel):
+        name: str
+
+
+    class ActionPayload(GenericModel, Generic[ActionInput]):
+        action: ActionName
+        input: ActionInput
+        request_query: str
+        session_variables: dict[str, str]
+
 
     app = FastAPI()
 
-    @app.post("/items/", response_model=${actionName}Args)
-    async def ${actionName}Handler(item: ${actionName}Args = Body(...)) -> ${returnType}:
+
+    @app.post("/${actionName}")
+    async def ${actionName}Handler(action: ActionPayload[${actionName}Args]) -> ${returnType}:
         # business logic here
+        return ${returnType}()
   `
-  // Need to replace "from dataclasses import dataclass" with "from "pydantic.dataclasses"
-  // then add "(config=Config)" to all @dataclass objects
-  // To get FastAPI to serialize the dataclass models properly
-  // See https://github.com/tiangolo/fastapi/issues/624#issuecomment-569829199
-  baseTemplate = baseTemplate
-    .replace('from dataclasses', 'from pydantic.dataclasses')
-    .replace(/@dataclass/gi, '@dataclass(config=Config)')
 
   return baseTemplate
 }

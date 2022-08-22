@@ -13,28 +13,16 @@ const scalarMap = {
 }
 
 const baseTypes = template`
-  from dataclasses import dataclass, asdict
-  from typing import List, Optional
+  from pydantic import BaseModel
   from enum import Enum, auto
-  import json
-
-  @dataclass
-  class RequestMixin:
-      @classmethod
-      def from_request(cls, request):
-          values = request.get("input")
-          return cls(**values)
-
-      def to_json(self):
-          return json.dumps(asdict(self))
 `
 const fieldFormatter = (field: Fieldlike) => {
   let { name, required, list, type } = serialize(field)
   let T = isScalar(type) ? scalarMap[type] : type
   // str -> List[str]
-  if (list) T = `List[${T}]`
+  if (list) T = `list[${T}]`
   // List[str] -> Optional[List[str]]
-  if (!required) T = `Optional[${T}]`
+  if (!required) T = `${T} | None`
   return { name, type: T }
 }
 const pythonTypeDef = (typeName: string, fields: Fieldlike[]): string => {
@@ -44,8 +32,7 @@ const pythonTypeDef = (typeName: string, fields: Fieldlike[]): string => {
     .join('\n')
 
   return template`
-      @dataclass
-      class ${typeName}(RequestMixin):
+      class ${typeName}(BaseModel):
       ${fieldDefs}
     `
 }
